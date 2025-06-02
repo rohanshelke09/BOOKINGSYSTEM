@@ -1,7 +1,170 @@
 import React, { useEffect, useState } from "react";
-import { useParams ,useNavigate} from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import styled from "styled-components";
+import GetHotelReviews from './GetHotelReviews';
 
+const PageContainer = styled.div`
+  min-height: 100vh;
+  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+              url('/Images/362619.jpg');
+  background-size: cover;
+  background-attachment: fixed;
+  padding: 40px 20px;
+`;
+
+const HotelContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  overflow: hidden;
+`;
+
+const HotelHeader = styled.div`
+  position: relative;
+  height: 300px;
+  background: ${props => `url(${props.$imageSrc})`};
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.7));
+  }
+`;
+
+const HotelName = styled.h1`
+  position: relative;
+  font-size: 2.5rem;
+  margin: 0;
+  z-index: 1;
+`;
+
+const HotelRating = styled.div`
+  position: relative;
+  font-size: 1.2rem;
+  z-index: 1;
+  margin-top: 10px;
+`;
+
+const ContentGrid = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  padding: 30px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const DetailsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const DetailItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+`;
+
+const DetailLabel = styled.span`
+  font-weight: 600;
+  color: #34495e;
+  width: 120px;
+`;
+
+const DetailValue = styled.span`
+  color: #2c3e50;
+`;
+
+const BookingSection = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+`;
+
+const DateInput = styled.input`
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 14px;
+
+  &:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+  }
+`;
+
+const BookButton = styled.button`
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+`;
+
+const MapContainer = styled.div`
+  height: 300px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 20px;
+`;
+
+const LoadingSpinner = styled.div`
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #007bff;
+  border-radius: 50%;
+  margin: 20px auto;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+const ReviewsSection = styled.div`
+  grid-column: 1 / -1;
+  margin-top: 30px;
+`;
 const GetHotelsById = () => {
   const { hotelID } = useParams();
   const [hotel, setHotel] = useState(null);
@@ -10,102 +173,9 @@ const GetHotelsById = () => {
   const [checkOut, setCheckOut] = useState('');
   const navigate = useNavigate();
 
-  const styles = {
-    container: {
-      maxWidth: "800px",
-      margin: "40px auto",
-      padding: "30px",
-      borderRadius: "12px",
-      boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-      backgroundColor: "#ffffff",
-      fontFamily: "Arial, sans-serif"
-    },
-    header: {
-      textAlign: "center",
-      color: "#2c3e50",
-      marginBottom: "30px",
-      fontSize: "28px",
-      fontWeight: "600"
-    },
-    detailsContainer: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "20px"
-    },
-    detailRow: {
-      display: "flex",
-      justifyContent: "space-between",
-      padding: "15px",
-      borderBottom: "1px solid #eee",
-      transition: "background-color 0.2s ease",
-      '&:hover': {
-        backgroundColor: "#f8f9fa"
-      }
-    },
-    label: {
-      fontWeight: "600",
-      color: "#34495e",
-      flex: "0 0 120px"
-    },
-    value: {
-      color: "#2c3e50",
-      flex: "1",
-      textAlign: "right"
-    },
-    datePickerContainer: {
-      marginTop: "30px",
-      textAlign: "center"
-    },
-    dateInput: {
-      padding: "12px",
-      marginRight: "15px",
-      borderRadius: "6px",
-      border: "1px solid #dcdfe6",
-      fontSize: "14px",
-      transition: "border-color 0.2s ease",
-      outline: "none",
-      "&:focus": {
-        borderColor: "#007bff",
-        boxShadow: "0 0 0 2px rgba(0,123,255,0.25)"
-      }
-    },
-    button: {
-      padding: "12px 24px",
-      backgroundColor: "#007bff",
-      color: "white",
-      border: "none",
-      borderRadius: "6px",
-      fontSize: "16px",
-      fontWeight: "500",
-      cursor: "pointer",
-      transition: "all 0.2s ease",
-      marginTop: "20px",
-      "&:hover": {
-        backgroundColor: "#0056b3"
-      },
-      "&:disabled": {
-        backgroundColor: "#cccccc",
-        cursor: "not-allowed",
-        opacity: 0.7
-      }
-    },
-    errorMessage: {
-      textAlign: "center",
-      color: "#dc3545",
-      padding: "15px",
-      backgroundColor: "#f8d7da",
-      borderRadius: "6px",
-      marginTop: "20px"
-    },
-    loadingSpinner: {
-      width: "50px",
-      height: "50px",
-      border: "5px solid #f3f3f3",
-      borderTop: "5px solid #007bff",
-      borderRadius: "50%",
-      margin: "20px auto",
-      animation: "spin 1s linear infinite"
-    }
+  const getRandomImage = () => {
+    const images = ['/Images/1390015.jpg', '/Images/362619.jpg', '/Images/366875.jpg'];
+    return images[Math.floor(Math.random() * images.length)];
   };
 
   useEffect(() => {
@@ -124,86 +194,90 @@ const GetHotelsById = () => {
   }, [hotelID]);
 
   if (error) {
-    return <div style={styles.errorMessage}>{error}</div>;
+    return (
+      <PageContainer>
+        <HotelContainer>
+          <div style={{ padding: 20, color: '#dc3545' }}>{error}</div>
+        </HotelContainer>
+      </PageContainer>
+    );
   }
 
   if (!hotel) {
     return (
-      <div style={{ textAlign: "center", marginTop: "40px" }}>
-        <div style={styles.loadingSpinner}></div>
-        <p style={{ color: "#666", marginTop: "15px" }}>Loading hotel details...</p>
-        <style>
-          {`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}
-        </style>
-      </div>
+      <PageContainer>
+        <HotelContainer>
+          <LoadingSpinner />
+          <p style={{ textAlign: 'center', color: '#666' }}>Loading hotel details...</p>
+        </HotelContainer>
+      </PageContainer>
     );
   }
 
   return (
-    <div style={styles.datePickerContainer}>
-        <div>
-          <input
-            type="date"
-            value={checkIn}
-            onChange={(e) => setCheckIn(e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
-            style={styles.dateInput}
-            required
-            placeholder="Check-in Date"
-          />
-          <input
-            type="date"
-            value={checkOut}
-            onChange={(e) => setCheckOut(e.target.value)}
-            min={checkIn || new Date().toISOString().split('T')[0]}
-            style={styles.dateInput}
-            required
-            placeholder="Check-out Date"
-          />
-        </div>
-        <button 
-          style={{
-            ...styles.button,
-            opacity: checkIn && checkOut ? 1 : 0.6
-          }}
-          onClick={() => {
-            if (checkIn && checkOut) {
-              navigate(`/getavailablerooms/${hotelID}/${checkIn}/${checkOut}`);
-            } else {
-              alert('Please select both check-in and check-out dates');
-            }
-          }}
-          disabled={!checkIn || !checkOut}
-        >
-          View Available Rooms
-        </button>
-    <div style={styles.container}>
-      <h2 style={styles.header}>{hotel.name}</h2>
-      
-      <div style={styles.detailsContainer}>
-        {[
-          { label: "Location", value: hotel.location },
-          { label: "Manager ID", value: hotel.managerID },
-          { label: "Amenities", value: hotel.amenities },
-          { label: "Rating", value: `${hotel.rating} ⭐` }
-        ].map((detail, index) => (
-          <div key={index} style={styles.detailRow}>
-            <span style={styles.label}>{detail.label}</span>
-            <span style={styles.value}>{detail.value}</span>
-          </div>
-        ))}
-      </div>
+    <PageContainer>
+      <HotelContainer>
+        <HotelHeader $imageSrc={getRandomImage()}>
+          <HotelName>{hotel.name}</HotelName>
+          <HotelRating>{hotel.rating} ⭐</HotelRating>
+        </HotelHeader>
 
-      
+        <ContentGrid>
+          <DetailsList>
+            <DetailItem>
+              <DetailLabel>Location:</DetailLabel>
+              <DetailValue>{hotel.location}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailLabel>Amenities:</DetailLabel>
+              <DetailValue>{hotel.amenities}</DetailValue>
+            </DetailItem>
+            <MapContainer>
+              <iframe
+                title="Hotel Location"
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(hotel.location)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+              />
+            </MapContainer>
+          </DetailsList>
 
-        
-      </div>
-    </div>
+          <BookingSection>
+            <h3 style={{ marginBottom: 20 }}>Book Your Stay</h3>
+            <DateInput
+              type="date"
+              value={checkIn}
+              onChange={(e) => setCheckIn(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              required
+              placeholder="Check-in Date"
+            />
+            <DateInput
+              type="date"
+              value={checkOut}
+              onChange={(e) => setCheckOut(e.target.value)}
+              min={checkIn || new Date().toISOString().split('T')[0]}
+              required
+              placeholder="Check-out Date"
+            />
+            <BookButton
+              onClick={() => {
+                if (checkIn && checkOut) {
+                  navigate(`/getavailablerooms/${hotelID}/${checkIn}/${checkOut}`);
+                }
+              }}
+              disabled={!checkIn || !checkOut}
+            >
+              View Available Rooms
+            </BookButton>
+          </BookingSection>
+          <ReviewsSection>
+          <GetHotelReviews hotelID={hotelID} />
+        </ReviewsSection>
+        </ContentGrid>
+      </HotelContainer>
+    </PageContainer>
   );
 };
 

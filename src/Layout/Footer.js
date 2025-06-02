@@ -71,16 +71,6 @@ const Footer = () => {
         </FooterSection>
 
         <FooterSection>
-          <h3>Quick Links</h3>
-          <ul>
-            <li><Link to="/rooms">Our Rooms</Link></li>
-            <li><Link to="/amenities">Amenities</Link></li>
-            <li><Link to="/dining">Dining</Link></li>
-            <li><Link to="/special-offers">Special Offers</Link></li>
-          </ul>
-        </FooterSection>
-
-        <FooterSection>
           <h3>Contact</h3>
           <ul>
             <li>123 Hotel Street</li>
@@ -98,6 +88,11 @@ const Footer = () => {
             <li><a href="https://instagram.com">Instagram</a></li>
             <li><a href="https://linkedin.com">LinkedIn</a></li>
           </ul>
+        </FooterSection>
+        
+        <FooterSection>
+          <h1>Happy Stay</h1>
+
         </FooterSection>
       </FooterContent>
 
