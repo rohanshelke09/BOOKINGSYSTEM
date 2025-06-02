@@ -27,6 +27,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<UserRegistration />} />
+          <Route path="/" element={<Home />} />
           
           {/* Admin Routes */}
           {/* <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
@@ -49,7 +50,7 @@ function App() {
             <Route path="/hotel-reviews/:hotelID" element={<GetHotelReviews />} />
           </Route>
 
-          <Route path="/" element={<Home />} />
+          
         </Routes>
       </MainContent>
       <Footer />
