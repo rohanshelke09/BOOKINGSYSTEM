@@ -9,9 +9,11 @@ import styled from 'styled-components';
 import GuestDashboard from './Components/Dashboard/GuestDashboard';
 import Home from './Components/Home';
 import GetUserBookings from './Components/GetUserBookings';
-import BookRoom from './Components/BookRoom';
+
 import GetHotelsById from './Components/GetHotelById';
 import GetHotelReviews from './Components/GetHotelReviews';
+import GetAvailableHotels from './Components/GetAvailableHotels';
+import GetAvailableRooms from './Components/GetAvailableRooms';
 const MainContent = styled.main`
   min-height: calc(100vh - 160px); // Adjust based on header/footer height
   padding: 20px;
@@ -28,7 +30,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<UserRegistration />} />
           <Route path="/" element={<Home />} />
-          
+
           {/* Admin Routes */}
           {/* <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -44,10 +46,12 @@ function App() {
           {/* Guest Routes */}
           <Route element={<ProtectedRoute allowedRoles={['guest']} />}>
             <Route path="/guest-dashboard" element={<GuestDashboard />} />
-            <Route path="/booking" element={<BookRoom />} />
+            {/* <Route path="/booking" element={<Booking />} /> */}
             <Route path="/my-bookings" element={<GetUserBookings />} />
             <Route path="/hotel-details/:hotelID" element={<GetHotelsById />} />
             <Route path="/hotel-reviews/:hotelID" element={<GetHotelReviews />} />
+            <Route path="/available-hotels" element={<GetAvailableHotels/>} />
+            <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
           </Route>
 
           

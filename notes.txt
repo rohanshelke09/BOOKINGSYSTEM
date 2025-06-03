@@ -1,1 +1,1 @@
-after Make New Bookings -> go to rooms
+after Make New Bookings -> go to available hotels -> go to available rooms -> booking -> payment -> dashboard 

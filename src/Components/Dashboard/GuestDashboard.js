@@ -109,7 +109,7 @@ const GuestDashboard = () => {
           ) : (
             <p>No current bookings</p>
           )}
-          <ActionButton onClick={() => window.location.href = '/booking'}>
+          <ActionButton onClick={() => window.location.href = '/available-hotels'}>
             Make New Booking
           </ActionButton>
         </Card>

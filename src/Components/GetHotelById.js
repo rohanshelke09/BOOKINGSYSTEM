@@ -165,7 +165,43 @@ const ReviewsSection = styled.div`
   grid-column: 1 / -1;
   margin-top: 30px;
 `;
-const GetHotelsById = () => {
+
+const HotelDetailsCard = styled.div`
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+`;
+
+const HotelName2 = styled.h1`
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 2.5rem;
+  text-align: center;
+`;
+
+const HotelInfo = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+`;
+
+const InfoItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #34495e;
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    color: #007bff;
+  }
+`;
+
+const GetHotelsById = ({isEmbedded=false, embeddedCheckIn='', embeddedCheckOut=''}) => {
   const { hotelID } = useParams();
   const [hotel, setHotel] = useState(null);
   const [error, setError] = useState(null);
@@ -214,7 +250,28 @@ const GetHotelsById = () => {
     );
   }
 
-  return (
+  return isEmbedded?(
+    <HotelDetailsCard>
+    <HotelName>{hotel.name}</HotelName>
+    <HotelInfo>
+        <InfoItem>
+            <span>📍</span>
+            <span>{hotel.location}</span>
+        </InfoItem>
+        <InfoItem>
+            <span>⭐</span>
+            <span>{hotel.rating} Rating</span>
+        </InfoItem>
+        <InfoItem>
+            <span>📅</span>
+            <span>
+              {new Date(embeddedCheckIn).toLocaleDateString()} - {new Date(embeddedCheckOut).toLocaleDateString()}
+            </span>
+        </InfoItem>
+    </HotelInfo>
+</HotelDetailsCard>
+  ): 
+  (
     <PageContainer>
       <HotelContainer>
         <HotelHeader $imageSrc={getRandomImage()}>
@@ -237,7 +294,6 @@ const GetHotelsById = () => {
                 title="Hotel Location"
                 width="100%"
                 height="100%"
-                frameBorder="0"
                 src={`https://maps.google.com/maps?q=${encodeURIComponent(hotel.location)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
               />
             </MapContainer>
@@ -264,7 +320,7 @@ const GetHotelsById = () => {
             <BookButton
               onClick={() => {
                 if (checkIn && checkOut) {
-                  navigate(`/getavailablerooms/${hotelID}/${checkIn}/${checkOut}`);
+                  navigate(`/available-rooms/${hotelID}/${checkIn}/${checkOut}`);
                 }
               }}
               disabled={!checkIn || !checkOut}
