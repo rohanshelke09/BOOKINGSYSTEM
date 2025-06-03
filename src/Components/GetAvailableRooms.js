@@ -69,22 +69,7 @@ const RoomFeature = styled.p`
   gap: 5px;
 `;
 
-const BookButton = styled.button`
-  width: 100%;
-  padding: 9px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: auto;
 
-  &:hover {
-    background-color: rgb(1, 71, 16);
-  }
-`;
 
 const LoadingSpinner = styled.div`
   text-align: center;
@@ -141,18 +126,9 @@ const GetAvailableRooms = () => {
         }
     }, [hotelID, checkIn, checkOut]);
 
-    const handleRoomClick = (room) => {
-        navigate(`/booking/${room.roomID}`, {
-            state: {
-                roomID: room.roomID,
-                price: room.price,
-                checkIn: checkIn,
-                checkOut: checkOut
-            }
-        });
-    };
-    const handleBookingComplete = (roomID) => {
-        setBookedRooms(prev => new Set([...prev, roomID]));
+
+    const handleBookingComplete = (room) => {
+        setBookedRooms(prev => new Set([...prev, room.roomID]));
     };
 
     if (loading) {

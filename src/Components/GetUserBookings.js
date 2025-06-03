@@ -96,6 +96,7 @@ const EmptyMessage = styled.div`
 `;
 
 const GetUserBookings = () => {
+  
   const [bookings, setBookings] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -139,7 +140,7 @@ const GetUserBookings = () => {
   const handleCancelBooking = async (bookingId) => {
     try {
       const tokenObj = JSON.parse(localStorage.getItem("token"));
-      await axios.put(`https://localhost:7125/api/Bookings/${bookingId}/cancel`, null, {
+      await axios.put(`https://localhost:7125/api/Bookings/cancel/${bookingId}`, null, {
         headers: {
           'Authorization': `Bearer ${tokenObj.token}`
         }
