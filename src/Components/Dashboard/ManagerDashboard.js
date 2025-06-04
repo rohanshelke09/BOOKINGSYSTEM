@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 import styled from 'styled-components';
 import { FaHotel, FaUsers, FaChartLine, FaDollarSign, FaBed, FaCalendarCheck } from 'react-icons/fa';
 
@@ -158,8 +159,9 @@ const ActionButton = styled.button`
 `;
 
 const ManagerDashboard = () => {
-  const { hotelID } = useParams();
+    const [hotelDetails, setHotelDetails] = useState(null);
   const [bookings, setBookings] = useState([]);
+  const [hotelID, setHotelID] = useState(null);
   const [stats, setStats] = useState({
     totalBookings: 0,
     occupancyRate: 0,
@@ -167,78 +169,140 @@ const ManagerDashboard = () => {
     availableRooms: 0
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
  
   useEffect(() => {
     const fetchData = async () => {
       try {
+
         const token = localStorage.getItem('token');
         const tokenObj = token ? JSON.parse(token) : null;
-       
-        const response = await axios.get('https://localhost:7125/api/Bookings', {
-          headers: {
-            Authorization: `Bearer ${tokenObj?.token}`,
-            'Content-Type': 'application/json'
+        if (!tokenObj?.token) {
+            throw new Error('Authentication required');
           }
-        });
+  
+          const decodedToken = jwtDecode(tokenObj.token);
+          const managerId = decodedToken.nameid?.[0];
+  
+          // Fetch hotel details for the manager
+          const hotelResponse = await axios.get(
+            `https://localhost:7125/api/Hotels/by-manager/${managerId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${tokenObj.token}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+  
+          setHotelDetails(hotelResponse.data);
+          setHotelID(hotelResponse.data.hotelID);
+       
+          if (hotelResponse.data?.hotelID) {
+            const bookingsResponse = await axios.get(
+              `https://localhost:7125/api/Bookings/hotel/${hotelResponse.data.hotelID}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${tokenObj.token}`,
+                  'Content-Type': 'application/json'
+                }
+              }
+            );
  
-        setBookings(response.data);
-        setStats({
-          totalBookings: response.data.length,
-          occupancyRate: calculateOccupancyRate(response.data),
-          revenue: calculateTotalRevenue(response.data)
-        });
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setLoading(false);
-      }
-    };
+            setBookings(bookingsResponse.data);
+            setStats({
+                totalBookings: bookingsResponse.data?.length || 0,
+                occupancyRate: calculateOccupancyRate(
+                    bookingsResponse.data,
+                    hotelResponse.data.totalRooms
+                ),
+                revenue: calculateTotalRevenue(bookingsResponse.data),
+                availableRooms: Math.max(
+                    0,
+                    (hotelResponse.data.totalRooms || 0) - 
+                    (Array.isArray(bookingsResponse.data) ? 
+                        bookingsResponse.data.filter(b => 
+                            b.status === 'Confirmed' && 
+                            new Date(b.checkOutDate) > new Date()
+                        ).length : 0)
+                )
+            });
+          }
+  
+          setLoading(false);
+        } catch (error) {
+          console.error('Error fetching manager data:', error);
+          setError(error.response?.data?.message || 'Failed to load dashboard data');
+          setLoading(false);
+        }
+      };
  
     fetchData();
   }, []);
  
-  const calculateOccupancyRate = (bookings) => {
-    // Add your occupancy rate calculation logic here
-    return (bookings.filter(b => b.status === 'Confirmed').length / bookings.length * 100).toFixed(1);
-  };
- 
-  const calculateTotalRevenue = (bookings) => {
-    return bookings.reduce((sum, booking) => sum + (booking.totalPrice || 0), 0);
-  };
- 
+// Add these helper functions if not already present
+const calculateOccupancyRate = (bookings, totalRooms) => {
+    if (!Array.isArray(bookings) || !totalRooms) return 0;
+    
+    const activeBookings = bookings.filter(b => 
+        b.status === 'Confirmed' && 
+        new Date(b.checkOutDate) > new Date()
+    );
+    
+    const rate = (activeBookings.length / totalRooms) * 100;
+    return isNaN(rate) ? 0 : rate.toFixed(1);
+};
+  
+const calculateTotalRevenue = (payments,bookings) => {
+    if (!Array.isArray(bookings)) return 0;
+    
+    return bookings
+        .filter(b => b.status === 'Confirmed')
+        .reduce((sum, booking) => {
+            const price = Number(payments.amount) || 0;
+            return sum + price;
+        }, 0);
+};
+
+
   return (
     <DashboardContainer>
       <WelcomeSection>
         <h1>Hotel Manager Dashboard</h1>
         <p>Welcome back! Here's your hotel's performance overview</p>
+        {hotelDetails && (
+          <p>Managing: {hotelDetails.name} - {hotelDetails.location}</p>
+        )}
       </WelcomeSection>
 
       <StatsGrid>
-        <StatCard iconColor="#2193b0">
-          <FaCalendarCheck className="icon" />
-          <div className="label">Total Bookings</div>
-          <div className="value">{stats.totalBookings}</div>
-        </StatCard>
+    <StatCard $iconColor="#2193b0">
+        <FaCalendarCheck className="icon" />
+        <div className="label">Total Bookings</div>
+        <div className="value">{stats.totalBookings || 0}</div>
+    </StatCard>
 
-        <StatCard iconColor="#00b894">
-          <FaChartLine className="icon" />
-          <div className="label">Occupancy Rate</div>
-          <div className="value">{stats.occupancyRate}%</div>
-        </StatCard>
+    <StatCard $iconColor="#00b894">
+        <FaChartLine className="icon" />
+        <div className="label">Occupancy Rate</div>
+        <div className="value">{stats.occupancyRate || 0}%</div>
+    </StatCard>
 
-        <StatCard iconColor="#00cec9">
-          <FaDollarSign className="icon" />
-          <div className="label">Total Revenue</div>
-          <div className="value">${stats.revenue.toLocaleString()}</div>
-        </StatCard>
+    <StatCard $iconColor="#00cec9">
+        <FaDollarSign className="icon" />
+        <div className="label">Total Revenue</div>
+        <div className="value">
+            ${(stats.revenue || 0).toLocaleString()}
+        </div>
+    </StatCard>
 
-        <StatCard iconColor="#6c5ce7">
-          <FaBed className="icon" />
-          <div className="label">Available Rooms</div>
-          <div className="value">{stats.availableRooms}</div>
-        </StatCard>
-      </StatsGrid>
+    <StatCard $iconColor="#6c5ce7">
+        <FaBed className="icon" />
+        <div className="label">Available Rooms</div>
+        <div className="value">{stats.availableRooms || 0}</div>
+    </StatCard>
+</StatsGrid>
 
       <ContentGrid>
         <Card>
@@ -263,7 +327,7 @@ const ManagerDashboard = () => {
           ) : (
             <p>No recent bookings</p>
           )}
-          <ActionButton variant="outline" onClick={() => navigate('/bookings')}>
+          <ActionButton $variant="outline" onClick={() => navigate('/bookings')}>
             View All Bookings
           </ActionButton>
         </Card>
