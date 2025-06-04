@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardContainer = styled.div`
   padding: 20px;
@@ -49,10 +50,18 @@ const ActionButton = styled.button`
     background-color: #0056b3;
   }
 `;
+const BookingCard = styled.div`
+  padding: 15px;
+  margin-bottom: 15px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+`;
 
 const GuestDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Simulated API call to fetch guest's bookings
@@ -61,7 +70,7 @@ const GuestDashboard = () => {
 
         const token = localStorage.getItem('token');
         const tokenObj = token ? JSON.parse(token) : null;
-        const decodedToken = jwtDecode(JSON.parse(tokenObj).token);
+        const decodedToken = jwtDecode(tokenObj.token);
         const userID = decodedToken.nameid?.[0];
 
       if (!userID) {
@@ -84,7 +93,9 @@ const GuestDashboard = () => {
 
     fetchBookings();
   }, []);
-
+  const handleNewBooking = () => {
+    navigate('/available-hotels');
+  };
   return (
     <DashboardContainer>
       <WelcomeSection>
@@ -95,32 +106,30 @@ const GuestDashboard = () => {
       <CardGrid>
         <Card>
           <h3>Current Bookings</h3>
+          <ActionButton onClick={handleNewBooking}>
+            Make New Booking
+          </ActionButton>
           {loading ? (
             <p>Loading bookings...</p>
           ) : bookings.length > 0 ? (
             bookings.map(booking => (
-              <div key={booking.id}>
-                <p>Room: {booking.roomType}</p>
-                <p>Check-in: {booking.checkIn}</p>
-                <p>Check-out: {booking.checkOut}</p>
+              <BookingCard key={booking.bookingID}>
+                <p>Room: {booking.roomNumber}</p>
+                <p>Check-in: {new Date(booking.checkInDate).toLocaleDateString()}</p>
+                <p>Check-out: {new Date(booking.checkOutDate).toLocaleDateString()}</p>
                 <p>Status: {booking.status}</p>
-              </div>
+              </BookingCard>
             ))
           ) : (
             <p>No current bookings</p>
           )}
-          <ActionButton onClick={() => window.location.href = '/available-hotels'}>
-            Make New Booking
-          </ActionButton>
+          
         </Card>
-
-        
-
         <Card>
-          <h3>Special Offers</h3>
-          <p>Check out our latest deals and packages</p>
-          <ActionButton>View Offers</ActionButton>
+
+
         </Card>
+
       </CardGrid>
     </DashboardContainer>
   );

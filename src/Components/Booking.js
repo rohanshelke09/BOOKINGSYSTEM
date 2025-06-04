@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 const ButtonContainer = styled.div`
   display: flex;
@@ -53,7 +52,6 @@ const Booking = ({ roomID, price, checkIn, checkOut, onBookingComplete }) => {
     const [id, setBookingID] = useState(null);
     const [bookingStatus, setBookingStatus] = useState('pending');
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
 
   const handleBooking = async () => {
     try {

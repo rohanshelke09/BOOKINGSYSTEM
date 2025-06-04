@@ -7,6 +7,7 @@ import Header from './Layout/Header';
 import Footer from './Layout/Footer';
 import styled from 'styled-components';
 import GuestDashboard from './Components/Dashboard/GuestDashboard';
+import ManagerDashboard from './Components/Dashboard/ManagerDashboard';
 import Home from './Components/Home';
 import GetUserBookings from './Components/GetUserBookings';
 
@@ -38,10 +39,9 @@ function App() {
           </Route> */}
 
           {/* Manager Routes */}
-          {/* <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
             <Route path="/manager-dashboard" element={<ManagerDashboard />} />
-            <Route path="/manager/bookings" element={<ManageBookings />} />
-          </Route> */}
+          </Route>
 
           {/* Guest Routes */}
           <Route element={<ProtectedRoute allowedRoles={['guest']} />}>
