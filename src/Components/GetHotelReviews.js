@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
+import {jwtDecode} from 'jwt-decode';
 
 const ReviewsContainer = styled.div`
   padding: 20px;
@@ -123,27 +124,60 @@ const GetHotelReviews = ({ hotelID }) => {
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
-    const tokenData = JSON.parse(localStorage.getItem('token'));
     
     try {
-      await axios.post('https://localhost:7125/api/Reviews', {
-        userID: tokenData.userId,
-        hotelID: hotelID,
-        rating: parseInt(newReview.rating),
-        comment: newReview.comment
-      }, {
-        headers: {
-          Authorization: `Bearer ${tokenData.token}`
+      const token = localStorage.getItem('token');
+      const tokenObj = token ? JSON.parse(token) : null;
+      const decodedToken = jwtDecode(tokenObj.token);
+      const userID = decodedToken.nameid?.[0];
+      if (!token) {
+        setError('Please login to submit a review');
+        return;
+      }
+
+      // Create review data with proper type conversion
+      const reviewData = {
+        userID: Number(userID), // Remove array index
+        hotelID: Number(hotelID),
+        rating: Number(newReview.rating),
+        comment: newReview.comment.trim(),
+        timeStamp: new Date().toISOString()
+      };
+
+      // Validate data before submission
+      if (!reviewData.userID || !reviewData.hotelID || !reviewData.rating) {
+        setError('Invalid data. Please try again.');
+        return;
+      }
+
+      const response = await axios.post(
+        'https://localhost:7125/api/Reviews',
+        reviewData,
+        {
+          headers: {
+            'Authorization': `Bearer ${tokenObj?.token}`,
+            'Content-Type': 'application/json'
+          }
         }
-      });
-      
-      // Reset form and refresh reviews
-      setNewReview({ rating: 5, comment: '' });
-      fetchReviews();
+      );
+
+      if (response.data) {
+        setNewReview({ rating: 5, comment: '' });
+        setError(null);
+        await fetchReviews();
+      }
     } catch (err) {
-      setError('Failed to submit review');
+      console.error('Review submission error:', err);
+      if (err.response?.data?.errors) {
+        const errorMessage = Object.values(err.response.data.errors)
+          .flat()
+          .join(', ');
+        setError(`Validation error: ${errorMessage}`);
+      } else {
+        setError('Failed to submit review. Please try again.');
+      }
     }
-  };
+};
 
   if (loading) return <div>Loading reviews...</div>;
   if (error) return <div>{error}</div>;
@@ -179,7 +213,7 @@ const GetHotelReviews = ({ hotelID }) => {
         <NoReviews>No reviews yet. Be the first to review!</NoReviews>
       ) : (
         reviews.map((review) => (
-          <ReviewCard key={review.id}>
+          <ReviewCard key={review.reviewID}>
             <ReviewHeader>
               <Rating>{'★'.repeat(review.rating)}{'☆'.repeat(5-review.rating)}</Rating>
             </ReviewHeader>
