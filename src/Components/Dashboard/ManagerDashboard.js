@@ -9,6 +9,7 @@ import StatsCard from '../StatsCard';
 import BookingList from '../BookingList';
 import QuickActions from '../QuickActions';
 import styled from 'styled-components';
+import GetRoomsByHotel from '../GetRoomsByHotel';
 
 export const DashboardContainer = styled.div`
   padding: 2rem;
@@ -122,6 +123,7 @@ const ManagerDashboard = () => {
           onActionClick={(path) => navigate(path)}
         />
       </ContentGrid>
+      
     </DashboardContainer>
   );
 };

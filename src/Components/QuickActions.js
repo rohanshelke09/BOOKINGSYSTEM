@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useEffect } from 'react';
 import { 
   FaPlus, 
   FaBed, 
@@ -60,6 +61,12 @@ const ActionButton = styled.button`
 `;
 
 const QuickActions = ({ hotelID, onActionClick }) => {
+    useEffect(() => {
+        // Debug log to track hotelID changes
+        console.log('QuickActions received hotelID:', hotelID);
+        localStorage.setItem('hotelID', hotelID);
+        
+      }, [hotelID]);
   const actions = [
     {
       icon: FaPlus,

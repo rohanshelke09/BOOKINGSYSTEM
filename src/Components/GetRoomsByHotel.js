@@ -67,81 +67,101 @@ const LoadingSpinner = styled.div`
   color: #2193b0;
 `;
 
-const GetRoomsByHotel = ({ hotelId }) => {
-  const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const GetRoomsByHotel = ( {hotelID}) => {
+    const hotelId = localStorage.getItem('hotelID');
+    const [rooms, setRooms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const tokenObj = token ? JSON.parse(token) : null;
 
-        if (!tokenObj?.token) {
-          throw new Error('Authentication required');
+    useEffect(() => {
+        console.log('GetRoomsByHotel mounted with hotelID:', hotelId);
+        if (!hotelId) {
+          setError('Hotel ID is required');
+          setLoading(false);
+          return;
         }
-
-        const response = await axios.get(
-          `https://localhost:7125/api/Rooms/${hotelId}/rooms`,
-          {
-            headers: {
-              Authorization: `Bearer ${tokenObj.token}`,
-              'Content-Type': 'application/json'
+    
+        const fetchRooms = async () => {
+          try {
+            
+            const token = localStorage.getItem('token');
+            const tokenObj = token ? JSON.parse(token) : null;
+    
+            if (!tokenObj?.token) {
+              throw new Error('Authentication required');
             }
+    
+            const response = await axios.get(
+              `https://localhost:7125/api/Rooms/${hotelId}/rooms`,
+              {
+                headers: {
+                  Authorization: `Bearer ${tokenObj.token}`,
+                  'Content-Type': 'application/json'
+                }
+              }
+            );
+            console.log('API Response:', response.data);
+    
+            if (!response.data) {
+              throw new Error('No data received from API');
+            }
+    
+            setRooms(Array.isArray(response.data) ? response.data : []);
+            setError(null);
+          } catch (err) {
+            console.error('Error fetching rooms:', err);
+            setError(err.response?.data?.message || err.message || 'Failed to fetch rooms');
+            setRooms([]);
+          } finally {
+            setLoading(false);
           }
-        );
-        console.log('API Response:', response.data);
-        setRooms(response.data);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching rooms:', err);
-        setError(err.response?.data?.message || 'Failed to fetch rooms');
-        setRooms([]); // Reset rooms on error} finally {
-        setLoading(false);
-      }
-    };
-
-    if (hotelId) {
-      fetchRooms();
+        };
+    
+        fetchRooms();
+      }, [hotelID]);
+    
+  
+    if (loading) {
+      return <LoadingSpinner>Loading rooms...</LoadingSpinner>;
     }
-  }, [hotelId]);
-
-  if (loading) {
-    return <LoadingSpinner>Loading rooms...</LoadingSpinner>;
-  }
-
-  if (error) {
-    return <ErrorMessage>{error}</ErrorMessage>;
-  }
-
-  return (
-    <RoomContainer>
-      <h2>Hotel Rooms</h2>
-      <RoomGrid>
-        {rooms.length > 0 ? (
-          rooms.map(room => (
-            <RoomCard 
-              key={room.roomID} 
-              isAvailable={room.availability}
-            >
-              <h3>Room {room.roomID}</h3>
-              <div className="room-details">
-                <span>Type: {room.type}</span>
-                <span>Price: ${room.price.toLocaleString()}</span>
-                <span className="status">
-                  {room.availability ? 'Available' : 'Occupied'}
-                </span>
-                <p>{room.features}</p>
-              </div>
-            </RoomCard>
-          ))
-        ) : (
-          <p>No rooms available for this hotel.</p>
-        )}
-      </RoomGrid>
-    </RoomContainer>
-  );
-};
-
-export default GetRoomsByHotel;
+  
+    if (error) {
+      return (
+        <ErrorMessage>
+          <h3>Error Loading Rooms</h3>
+          <p>{error}</p>
+          <p>Hotel ID: {hotelID}</p>
+        </ErrorMessage>
+      );
+    }
+  
+    return (
+      <RoomContainer>
+        <h2>Hotel Rooms</h2>
+        <RoomGrid>
+          {rooms && rooms.length > 0 ? (
+            rooms.map(room => (
+              <RoomCard 
+                key={room.roomID}
+                $isAvailable={room.availability} // Added $ prefix for styled-component prop
+              >
+                <h3>Room {room.roomID}</h3>
+                <div className="room-details">
+                  <span>Type: {room.type}</span>
+                  <span className="price">Price: ${room.price}</span>
+                  <span className="status">
+                    {room.availability ? 'Available' : 'Not Available'}
+                  </span>
+                  <p>{room.features}</p>
+                </div>
+              </RoomCard>
+            ))
+          ) : (
+            <p>No rooms available for this hotel.</p>
+          )}
+        </RoomGrid>
+      </RoomContainer>
+    );
+  };
+  export default GetRoomsByHotel;
