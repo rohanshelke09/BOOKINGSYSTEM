@@ -1,39 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardContainer = styled.div`
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  background-color: #f8f9fa;
+  min-height: 100vh;
 `;
 
 const WelcomeSection = styled.div`
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   margin-bottom: 30px;
+  color: white;
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin-top: 10px;
+    font-size: 1.1rem;
+    opacity: 0.9;
+  }
 `;
 
 const CardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
   margin-bottom: 30px;
 `;
 
 const Card = styled.div`
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background-color: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
 
   h3 {
     color: #2c3e50;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
   }
 `;
 
@@ -41,106 +65,204 @@ const ActionButton = styled.button`
   background-color: #007bff;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+  padding: 12px 24px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  width: 100%;
+  margin-bottom: 15px;
 
   &:hover {
     background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
 `;
+
 const BookingCard = styled.div`
-  padding: 15px;
-  margin-bottom: 15px;
-  border: 1px solid #eee;
-  border-radius: 8px;
+  padding: 20px;
+  margin: 15px 0;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
   background-color: #f8f9fa;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  p {
+    margin: 8px 0;
+    color: #495057;
+  }
+`;
+
+const StatusBadge = styled.span`
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background-color: ${props => {
+    switch (props.$status?.toLowerCase()) {
+      case 'confirmed': return '#28a745';
+      case 'pending': return '#ffc107';
+      case 'cancelled': return '#dc3545';
+      default: return '#6c757d';
+    }
+  }};
+  color: white;
+`;
+
+const ServiceList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+
+  li {
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+    color: #495057;
+    display: flex;
+    align-items: center;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:before {
+      content: "→";
+      margin-right: 10px;
+      color: #007bff;
+    }
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  text-align: center;
+  padding: 20px;
+  color: #007bff;
+  font-weight: 500;
 `;
 
 const GuestDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulated API call to fetch guest's bookings
     const fetchBookings = async () => {
       try {
-
         const token = localStorage.getItem('token');
         const tokenObj = token ? JSON.parse(token) : null;
+
+        if (!tokenObj?.token) {
+          throw new Error('Authentication required');
+        }
+
         const decodedToken = jwtDecode(tokenObj.token);
         const userID = decodedToken.nameid?.[0];
 
-      if (!userID) {
-        throw new Error('User ID not found in token');
-      }
-            const response = await axios.get(`https://localhost:7125/api/Bookings/User/${userID}`, {
-                headers: {
-                    Authorization: `Bearer ${tokenObj?.token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-  
+        if (!userID) {
+          throw new Error('User ID not found');
+        }
+
+        const response = await axios.get(
+          `https://localhost:7125/api/Bookings/User/${userID}`,
+          {
+            headers: {
+              Authorization: `Bearer ${tokenObj.token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
         setBookings(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching bookings:', error);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching bookings:', err);
+        setError(err.message || 'Failed to fetch bookings');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchBookings();
   }, []);
-  const handleNewBooking = () => {
-    navigate('/available-hotels');
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
+
   return (
     <DashboardContainer>
       <WelcomeSection>
         <h1>Welcome to Your Dashboard</h1>
-        <p>Manage your bookings and explore our hotel services</p>
+        <p>Manage your bookings and explore our premium hotel services</p>
       </WelcomeSection>
 
       <CardGrid>
         <Card>
-          <h3>Current Bookings</h3>
-          <ActionButton onClick={handleNewBooking}>
+          <h3>Your Bookings</h3>
+          <ActionButton onClick={() => navigate('/available-hotels')}>
             Make New Booking
           </ActionButton>
+          
           {loading ? (
-            <p>Loading bookings...</p>
+            <LoadingSpinner>Loading your bookings...</LoadingSpinner>
+          ) : error ? (
+            <div style={{ color: '#dc3545', padding: '10px' }}>{error}</div>
           ) : bookings.length > 0 ? (
             bookings.map(booking => (
               <BookingCard key={booking.bookingID}>
-                <p>Room: {booking.roomNumber}</p>
-                <p>Check-in: {new Date(booking.checkInDate).toLocaleDateString()}</p>
-                <p>Check-out: {new Date(booking.checkOutDate).toLocaleDateString()}</p>
-                <p>Status: {booking.status}</p>
+                <h4>Booking #{booking.bookingID}</h4>
+                <p><strong>Room:</strong> {booking.roomNumber || 'Not assigned'}</p>
+                <p><strong>Check-in:</strong> {formatDate(booking.checkInDate)}</p>
+                <p><strong>Check-out:</strong> {formatDate(booking.checkOutDate)}</p>
+                <p>
+                  <strong>Status: </strong>
+                  <StatusBadge $status={booking.status}>
+                    {booking.status}
+                  </StatusBadge>
+                </p>
               </BookingCard>
             ))
           ) : (
-            <p>No current bookings</p>
+            <p style={{ textAlign: 'center', color: '#6c757d' }}>
+              No current bookings
+            </p>
           )}
-          
         </Card>
 
         <Card>
           <h3>Quick Services</h3>
-          <ul>
-            <li>Room Service</li>
-            <li>Housekeeping</li>
-            <li>Concierge</li>
-            <li>Restaurant Reservations</li>
-          </ul>
-          <ActionButton>Request Service</ActionButton>
+          <ServiceList>
+            <li>24/7 Room Service</li>
+            <li>Premium Housekeeping</li>
+            <li>Personal Concierge</li>
+            <li>Fine Dining Reservations</li>
+            <li>Spa & Wellness</li>
+          </ServiceList>
+          <ActionButton onClick={() => navigate('/services')}>
+            Request Service
+          </ActionButton>
         </Card>
 
         <Card>
           <h3>Special Offers</h3>
-          <p>Check out our latest deals and packages</p>
-          <ActionButton>View Offers</ActionButton>
+          <p style={{ marginBottom: '20px', color: '#495057' }}>
+            Discover exclusive deals and luxury packages tailored for our valued guests.
+          </p>
+          <ActionButton onClick={() => navigate('/offers')}>
+            View Special Offers
+          </ActionButton>
         </Card>
       </CardGrid>
     </DashboardContainer>

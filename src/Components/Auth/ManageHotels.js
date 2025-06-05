@@ -35,9 +35,10 @@ const ManageHotels = () => {
     if (result.success) {
       setEditingHotel(null);
     } else {
-      alert(result.error);
+      alert(result.error || 'Failed to update hotel');
     }
   };
+
 
   const handleDeleteClick = async (hotelId) => {
     if (window.confirm("Are you sure you want to delete this hotel?")) {
@@ -60,6 +61,8 @@ const ManageHotels = () => {
             <TableHeader>ID</TableHeader>
             <TableHeader>Name</TableHeader>
             <TableHeader>Location</TableHeader>
+            <TableHeader>Amenities</TableHeader>
+            <TableHeader>Manager ID</TableHeader>
             <TableHeader>Actions</TableHeader>
           </tr>
         </thead>
@@ -69,15 +72,17 @@ const ManageHotels = () => {
               <TableCell>{hotel.hotelID}</TableCell>
               <TableCell>{hotel.name}</TableCell>
               <TableCell>{hotel.location}</TableCell>
+              <TableCell>{hotel.amenities}</TableCell>
+              <TableCell>{hotel.managerID}</TableCell>
               <TableCell>
                 <ActionButton2
-                  variant="edit"
+                  $variant="edit"
                   onClick={() => handleEditClick(hotel)}
                 >
                   Edit
                 </ActionButton2>
                 <ActionButton2
-                  variant="delete"
+                  $variant="delete"
                   onClick={() => handleDeleteClick(hotel.hotelID)}
                 >
                   Delete

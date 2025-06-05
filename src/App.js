@@ -18,6 +18,7 @@ import GetAvailableHotels from './Components/GetAvailableHotels';
 import GetAvailableRooms from './Components/GetAvailableRooms';
 import GetRoomsByHotel from './Components/GetRoomsByHotel';
 import ManageHotels from './Components/Auth/ManageHotels';
+import ManageBookings from './Components/Auth/ManageBookings';
 
 
 const MainContent = styled.main`
@@ -37,11 +38,12 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<UserRegistration />} />
           <Route path="/" element={<Home />} />
-
+          <Route path="/hotel-details/:hotelID" element={<GetHotelsById />} />
           {/* Admin Routes */}
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/manage-hotels" element={<ManageHotels />} />
+            <Route path="/manage-bookings" element={<ManageBookings />} />
           </Route>
 
           {/* Manager Routes */}
@@ -55,7 +57,7 @@ function App() {
             <Route path="/guest-dashboard" element={<GuestDashboard />} />
             {/* <Route path="/booking" element={<Booking />} /> */}
             <Route path="/my-bookings" element={<GetUserBookings />} />
-            <Route path="/hotel-details/:hotelID" element={<GetHotelsById />} />
+           
             <Route path="/hotel-reviews/:hotelID" element={<GetHotelReviews />} />
             <Route path="/available-hotels" element={<GetAvailableHotels/>} />
             <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />

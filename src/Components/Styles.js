@@ -60,12 +60,12 @@ export const ActionButton2 = styled.button`
   font-weight: 500;
   color: white;
   background-color: ${(props) =>
-    props.variant === "edit" ? "#007bff" : "#dc3545"};
+    props.$variant === "edit" ? "#007bff" : "#dc3545"};
   transition: all 0.2s ease;
 
   &:hover {
     background-color: ${(props) =>
-      props.variant === "edit" ? "#0056b3" : "#c82333"};
+      props.$variant === "edit" ? "#0056b3" : "#c82333"};
     transform: translateY(-1px);
   }
 `;

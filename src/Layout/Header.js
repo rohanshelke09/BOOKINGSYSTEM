@@ -151,7 +151,7 @@ const Header = () => {
             <AuthButtons>
               <AuthLink to="/login">Login</AuthLink>
               <AuthLink to="/register">Register</AuthLink>
-              <BookNowButton to="/booking">Book Now</BookNowButton>
+             
             </AuthButtons>
           )}
         </NavMenu>

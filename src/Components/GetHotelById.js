@@ -217,7 +217,7 @@ const GetHotelsById = ({isEmbedded=false, embeddedCheckIn='', embeddedCheckOut='
   useEffect(() => {
     const fetchHotel = async () => {
       try {
-        const response = await axios.get(`http://localhost:5217/api/Hotels/${hotelID}`);
+        const response = await axios.get(`https://localhost:7125/api/Hotels/${hotelID}`);
         setHotel(response.data);
       } catch (error) {
         setError("Error fetching hotel: " + error.message);
