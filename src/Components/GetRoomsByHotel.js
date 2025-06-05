@@ -1,0 +1,147 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import styled from 'styled-components';
+
+const RoomContainer = styled.div`
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const RoomGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+`;
+
+const RoomCard = styled.div`
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  h3 {
+    color: #2193b0;
+    margin: 0 0 1rem 0;
+  }
+
+  .room-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: ${props => props.isAvailable ? '#4caf50' : '#f44336'};
+    color: white;
+    display: inline-block;
+    font-size: 0.875rem;
+  }
+
+  .price {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #2d3436;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: #f44336;
+  padding: 1rem;
+  background: #ffebee;
+  border-radius: 8px;
+  margin: 1rem 0;
+`;
+
+const LoadingSpinner = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #2193b0;
+`;
+
+const GetRoomsByHotel = ({ hotelId }) => {
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const tokenObj = token ? JSON.parse(token) : null;
+
+        if (!tokenObj?.token) {
+          throw new Error('Authentication required');
+        }
+
+        const response = await axios.get(
+          `https://localhost:7125/api/Rooms/${hotelId}/rooms`,
+          {
+            headers: {
+              Authorization: `Bearer ${tokenObj.token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        console.log('API Response:', response.data);
+        setRooms(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching rooms:', err);
+        setError(err.response?.data?.message || 'Failed to fetch rooms');
+        setRooms([]); // Reset rooms on error} finally {
+        setLoading(false);
+      }
+    };
+
+    if (hotelId) {
+      fetchRooms();
+    }
+  }, [hotelId]);
+
+  if (loading) {
+    return <LoadingSpinner>Loading rooms...</LoadingSpinner>;
+  }
+
+  if (error) {
+    return <ErrorMessage>{error}</ErrorMessage>;
+  }
+
+  return (
+    <RoomContainer>
+      <h2>Hotel Rooms</h2>
+      <RoomGrid>
+        {rooms.length > 0 ? (
+          rooms.map(room => (
+            <RoomCard 
+              key={room.roomID} 
+              isAvailable={room.availability}
+            >
+              <h3>Room {room.roomID}</h3>
+              <div className="room-details">
+                <span>Type: {room.type}</span>
+                <span>Price: ${room.price.toLocaleString()}</span>
+                <span className="status">
+                  {room.availability ? 'Available' : 'Occupied'}
+                </span>
+                <p>{room.features}</p>
+              </div>
+            </RoomCard>
+          ))
+        ) : (
+          <p>No rooms available for this hotel.</p>
+        )}
+      </RoomGrid>
+    </RoomContainer>
+  );
+};
+
+export default GetRoomsByHotel;

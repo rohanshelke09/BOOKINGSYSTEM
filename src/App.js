@@ -15,6 +15,7 @@ import GetHotelsById from './Components/GetHotelById';
 import GetHotelReviews from './Components/GetHotelReviews';
 import GetAvailableHotels from './Components/GetAvailableHotels';
 import GetAvailableRooms from './Components/GetAvailableRooms';
+import GetRoomsByHotel from './Components/GetRoomsByHotel';
 const MainContent = styled.main`
   min-height: calc(100vh - 160px); // Adjust based on header/footer height
   padding: 20px;
@@ -41,6 +42,7 @@ function App() {
           {/* Manager Routes */}
           <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
             <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+            <Route path="/hotel-rooms/:hotelID" element={<GetRoomsByHotel />} />
           </Route>
 
           {/* Guest Routes */}
