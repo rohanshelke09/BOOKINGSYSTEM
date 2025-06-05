@@ -125,11 +125,23 @@ const GuestDashboard = () => {
           )}
           
         </Card>
+
         <Card>
-
-
+          <h3>Quick Services</h3>
+          <ul>
+            <li>Room Service</li>
+            <li>Housekeeping</li>
+            <li>Concierge</li>
+            <li>Restaurant Reservations</li>
+          </ul>
+          <ActionButton>Request Service</ActionButton>
         </Card>
 
+        <Card>
+          <h3>Special Offers</h3>
+          <p>Check out our latest deals and packages</p>
+          <ActionButton>View Offers</ActionButton>
+        </Card>
       </CardGrid>
     </DashboardContainer>
   );

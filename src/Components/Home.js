@@ -90,7 +90,7 @@ const Home = () => {
             const token = localStorage.getItem('token');
             const tokenObj = token ? JSON.parse(token) : null;
 
-            const response = await axios.get('https://localhost:7125/api/Hotels/Search', {
+            const response = await axios.get('http://localhost:5217/api/User', {
                 params: {
                     location: searchParams.location,
                     amenities: searchParams.amenities.join(',')

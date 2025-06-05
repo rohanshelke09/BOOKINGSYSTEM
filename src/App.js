@@ -8,6 +8,7 @@ import Footer from './Layout/Footer';
 import styled from 'styled-components';
 import GuestDashboard from './Components/Dashboard/GuestDashboard';
 import ManagerDashboard from './Components/Dashboard/ManagerDashboard';
+import AdminDashboard from './Components/Dashboard/AdminDashboard';
 import Home from './Components/Home';
 import GetUserBookings from './Components/GetUserBookings';
 
@@ -16,12 +17,20 @@ import GetHotelReviews from './Components/GetHotelReviews';
 import GetAvailableHotels from './Components/GetAvailableHotels';
 import GetAvailableRooms from './Components/GetAvailableRooms';
 import GetRoomsByHotel from './Components/GetRoomsByHotel';
+import BookRoom from './Components/BookRoom';
+import ManageGuests from './Components/Auth/ManageGuests';
+import ManageManagers from './Components/Auth/ManageManagers'; 
+import ManageHotels from './Components/Auth/ManageHotels';
+import ManageBookings from './Components/Auth/ManageBookings';
+import ManageReviews from './Components/Auth/ManageReviews'; // Ensure this import is correct
+
 const MainContent = styled.main`
   min-height: calc(100vh - 160px); // Adjust based on header/footer height
   padding: 20px;
   margin-top: 120px; // To account for fixed header
   background-color: #f5f5f5;
 `;
+
 function App() {
   return (
     <BrowserRouter>
@@ -64,4 +73,5 @@ function App() {
     </BrowserRouter>
   );
 }
+
 export default App;
