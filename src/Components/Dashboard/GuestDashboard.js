@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
+import {jwtDecode} from 'jwt-decode';
 
 const DashboardContainer = styled.div`
   padding: 20px;
@@ -56,18 +58,23 @@ const GuestDashboard = () => {
     // Simulated API call to fetch guest's bookings
     const fetchBookings = async () => {
       try {
-        // Replace with actual API call
-        const mockBookings = [
-          {
-            id: 1,
-            roomType: 'Deluxe Suite',
-            checkIn: '2025-06-15',
-            checkOut: '2025-06-20',
-            status: 'Confirmed'
-          },
-          // Add more mock bookings as needed
-        ];
-        setBookings(mockBookings);
+
+        const token = localStorage.getItem('token');
+        const tokenObj = token ? JSON.parse(token) : null;
+        const decodedToken = jwtDecode(JSON.parse(tokenObj).token);
+        const userID = decodedToken.nameid?.[0];
+
+      if (!userID) {
+        throw new Error('User ID not found in token');
+      }
+            const response = await axios.get(`https://localhost:5217/api/Bookings/User/${userID}`, {
+                headers: {
+                    Authorization: `Bearer ${tokenObj?.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+  
+        setBookings(response.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching bookings:', error);
@@ -106,18 +113,6 @@ const GuestDashboard = () => {
             Make New Booking
           </ActionButton>
         </Card>
-
-        <Card>
-          <h3>Quick Services</h3>
-          <ul>
-            <li>Room Service</li>
-            <li>Housekeeping</li>
-            <li>Concierge</li>
-            <li>Restaurant Reservations</li>
-          </ul>
-          <ActionButton>Request Service</ActionButton>
-        </Card>
-
         <Card>
           <h3>Special Offers</h3>
           <p>Check out our latest deals and packages</p>

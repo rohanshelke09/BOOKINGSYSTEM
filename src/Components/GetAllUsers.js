@@ -31,7 +31,7 @@ const BookingCard = styled.div`
   }
 `;
 
-const BookingDetail = styled.div`
+const UserDetail = styled.div`
   margin-bottom: 10px;
   
   strong {
@@ -95,13 +95,13 @@ const EmptyMessage = styled.div`
   color: #6c757d;
 `;
 
-const GetUserBookings = () => {
+const GetAllUsers = () => {
   const [bookings, setBookings] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchUserBookings = async () => {
+  const fetchAllUsers = async () => {
     try {
       const tokenObj = JSON.parse(localStorage.getItem("token"));
       if (!tokenObj?.token) {
@@ -115,7 +115,7 @@ const GetUserBookings = () => {
         throw new Error('User ID not found in token');
       }
 
-      const response = await axios.get(`http://localhost:5217/api/Bookings/User/${userId}`, {
+      const response = await axios.get(`http://localhost:5217/api/Bookings/User`, {
         headers: {
           'Authorization': `Bearer ${tokenObj.token}`
         }
@@ -199,4 +199,4 @@ const GetUserBookings = () => {
   );
 };
 
-export default GetUserBookings;
+export default GetAllUsers;

@@ -102,7 +102,7 @@ const BookRoom = () => {
             if (!tokenObj?.token) throw new Error('No authentication token found');
 
             const response = await axios.post(
-                `https://localhost:7125/api/Bookings/${roomID}`,
+                `http://localhost:5217/api/Bookings/${roomID}`,
                 formData,
                 {
                     headers: {
