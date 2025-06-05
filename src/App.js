@@ -17,6 +17,14 @@ import GetHotelReviews from './Components/GetHotelReviews';
 import GetAvailableHotels from './Components/GetAvailableHotels';
 import GetAvailableRooms from './Components/GetAvailableRooms';
 import GetRoomsByHotel from './Components/GetRoomsByHotel';
+import AddRoom from './Components/AddRoom';
+import AvailableRooms from './Components/AvailableRooms';
+
+ import RoomManagement from './Components/RoomManagement';
+// import AddRoom from './Components/RoomOperations/AddRoom';
+// import UpdateRoom from './Components/RoomOperations/UpdateRoom';
+// import DeleteRoom from './Components/RoomOperations/DeleteRoom';
+// import ViewRooms from './Components/RoomOperations/ViewRooms';
 const MainContent = styled.main`
   min-height: calc(100vh - 160px); // Adjust based on header/footer height
   padding: 20px;
@@ -39,12 +47,20 @@ function App() {
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/admin/manage-hotels" element={<ManageHotels />} />
           </Route> */}
+          
+          {/* <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
+          <Route path="/hotel-rooms/:hotelID/update" element={<UpdateRoom />} />
+          <Route path="/hotel-rooms/:hotelID/delete" element={<DeleteRoom />} />
+          <Route path="/hotel-rooms/:hotelID/view" element={<ViewRooms />} /> */}
 
           {/* Manager Routes */}
           <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
             <Route path="/manager-dashboard" element={<ManagerDashboard />} />
             <Route path="/hotel-rooms/:hotelID" element={<GetRoomsByHotel />} />
             <Route path="/bookings/:bookingId" element={<GetBookingByBookingId />} />
+            <Route path="/hotel-rooms/:hotelID/manage" element={<RoomManagement />} />
+            <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
+            <Route path="/hotel-rooms/:hotelID/available" element={<AvailableRooms />} />
           </Route>
 
           {/* Guest Routes */}

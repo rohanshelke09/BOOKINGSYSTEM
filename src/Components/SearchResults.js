@@ -158,7 +158,7 @@ const SearchResults = ({ hotels, loading, error }) => {
                         </InfoRow>
 
                         <AmenitiesList>
-                            {hotel.amenities.split(',').map((amenity, index) => (
+                            {hotel.amenities?.split(',').map((amenity, index) => (
                                 <AmenityTag key={index}>
                                     {amenity.trim()}
                                 </AmenityTag>
