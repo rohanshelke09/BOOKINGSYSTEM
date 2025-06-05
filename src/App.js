@@ -11,6 +11,7 @@ import ManagerDashboard from './Components/Dashboard/ManagerDashboard';
 import AdminDashboard from './Components/Dashboard/AdminDashboard';
 import Home from './Components/Home';
 import GetUserBookings from './Components/GetUserBookings';
+import GetBookingByBookingId from './Components/GetBookingByBookingId';
 
 import GetHotelsById from './Components/GetHotelById';
 import GetHotelReviews from './Components/GetHotelReviews';
@@ -50,6 +51,10 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
             <Route path="/manager-dashboard" element={<ManagerDashboard />} />
             <Route path="/hotel-rooms/:hotelID" element={<GetRoomsByHotel />} />
+            <Route path="/bookings/:bookingId" element={<GetBookingByBookingId />} />
+            <Route path="/hotel-rooms/:hotelID/manage" element={<RoomManagement />} />
+            <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
+            <Route path="/hotel-rooms/:hotelID/available" element={<AvailableRooms />} />
           </Route>
 
           {/* Guest Routes */}
