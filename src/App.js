@@ -8,6 +8,7 @@ import Footer from './Layout/Footer';
 import styled from 'styled-components';
 import GuestDashboard from './Components/Dashboard/GuestDashboard';
 import ManagerDashboard from './Components/Dashboard/ManagerDashboard';
+import AdminDashboard from './Components/Dashboard/AdminDashboard';
 import Home from './Components/Home';
 import GetUserBookings from './Components/GetUserBookings';
 
@@ -16,12 +17,17 @@ import GetHotelReviews from './Components/GetHotelReviews';
 import GetAvailableHotels from './Components/GetAvailableHotels';
 import GetAvailableRooms from './Components/GetAvailableRooms';
 import GetRoomsByHotel from './Components/GetRoomsByHotel';
+import ManageHotels from './Components/Auth/ManageHotels';
+import ManageBookings from './Components/Auth/ManageBookings';
+
+
 const MainContent = styled.main`
   min-height: calc(100vh - 160px); // Adjust based on header/footer height
   padding: 20px;
   margin-top: 120px; // To account for fixed header
   background-color: #f5f5f5;
 `;
+
 function App() {
   return (
     <BrowserRouter>
@@ -32,12 +38,13 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<UserRegistration />} />
           <Route path="/" element={<Home />} />
-
+          <Route path="/hotel-details/:hotelID" element={<GetHotelsById />} />
           {/* Admin Routes */}
-          {/* <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/manage-hotels" element={<ManageHotels />} />
-          </Route> */}
+            <Route path="/manage-hotels" element={<ManageHotels />} />
+            <Route path="/manage-bookings" element={<ManageBookings />} />
+          </Route>
 
           {/* Manager Routes */}
           <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
@@ -50,7 +57,7 @@ function App() {
             <Route path="/guest-dashboard" element={<GuestDashboard />} />
             {/* <Route path="/booking" element={<Booking />} /> */}
             <Route path="/my-bookings" element={<GetUserBookings />} />
-            <Route path="/hotel-details/:hotelID" element={<GetHotelsById />} />
+           
             <Route path="/hotel-reviews/:hotelID" element={<GetHotelReviews />} />
             <Route path="/available-hotels" element={<GetAvailableHotels/>} />
             <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
@@ -64,4 +71,5 @@ function App() {
     </BrowserRouter>
   );
 }
+
 export default App;

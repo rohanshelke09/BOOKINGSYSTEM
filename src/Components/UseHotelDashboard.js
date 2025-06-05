@@ -44,6 +44,8 @@ const UseHotelDashboard = () => {
 
         const decodedToken = jwtDecode(tokenObj.token);
         const managerId = decodedToken.nameid?.[0];
+ // Log managerId
+ console.log('Manager ID from token:', managerId);
 
         const hotelResponse = await axios.get(
           `https://localhost:7125/api/Hotels/by-manager/${managerId}`,
@@ -55,8 +57,16 @@ const UseHotelDashboard = () => {
           }
         );
 
+        
+ if (!hotelResponse.data?.hotelID) {
+   throw new Error('No hotel ID found in response');
+ }
+
         setHotelDetails(hotelResponse.data);
         setHotelID(hotelResponse.data.hotelID);
+       
+ // Log hotelID after setting
+ console.log('Set hotelID to:', hotelResponse.data.hotelID);
 
         if (hotelResponse.data?.hotelID) {
           const bookingsResponse = await axios.get(

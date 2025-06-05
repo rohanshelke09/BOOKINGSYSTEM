@@ -92,7 +92,7 @@ const Message = styled.div`
 `;
 
 const UserRegistration = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigate(); 
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -110,7 +110,7 @@ const UserRegistration = () => {
         if (!formData.email.trim()) newErrors.email = "Email is required";
         else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
         if (!formData.password) newErrors.password = "Password is required";
-        else if (formData.password.length < 8) newErrors.password = "Password must be at least 6 characters";
+        else if (formData.password.length < 8) newErrors.password = "Password must be at least 8 characters";
         if (!formData.contactNumber) newErrors.contactNumber = "Contact number is required";
         if (!formData.role) newErrors.role = "Role is required";
 
@@ -124,7 +124,7 @@ const UserRegistration = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post('https://localhost:7125/api/User', formData);
+            const response = await axios.post('http://localhost:5217/api/User', formData);
             setMessage(`Registration successful! Welcome ${response.data.name}`);
             setTimeout(() => {
                 navigate('/login');
