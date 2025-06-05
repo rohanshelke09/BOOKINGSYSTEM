@@ -10,6 +10,7 @@ import GuestDashboard from './Components/Dashboard/GuestDashboard';
 import ManagerDashboard from './Components/Dashboard/ManagerDashboard';
 import Home from './Components/Home';
 import GetUserBookings from './Components/GetUserBookings';
+import GetBookingByBookingId from './Components/GetBookingByBookingId';
 
 import GetHotelsById from './Components/GetHotelById';
 import GetHotelReviews from './Components/GetHotelReviews';
@@ -43,6 +44,7 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
             <Route path="/manager-dashboard" element={<ManagerDashboard />} />
             <Route path="/hotel-rooms/:hotelID" element={<GetRoomsByHotel />} />
+            <Route path="/bookings/:bookingId" element={<GetBookingByBookingId />} />
           </Route>
 
           {/* Guest Routes */}

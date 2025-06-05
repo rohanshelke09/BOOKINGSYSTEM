@@ -15,21 +15,9 @@ const UseHotelDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const calculateOccupancyRate = (bookings, totalRooms) => {
-    if (!Array.isArray(bookings) || !totalRooms) return 0;
-    const activeBookings = bookings.filter(b => 
-      b.status === 'Confirmed' && 
-      new Date(b.checkOutDate) > new Date()
-    );
-    const rate = (activeBookings.length / totalRooms) * 100;
-    return isNaN(rate) ? 0 : rate.toFixed(1);
-  };
-
-  const calculateTotalRevenue = (bookings) => {
-    if (!Array.isArray(bookings)) return 0;
-    return bookings
-      .filter(b => b.status === 'Confirmed')
-      .reduce((sum, booking) => sum + (Number(booking.totalAmount) || 0), 0);
+  const calculateOccupancyRate = (bookings) => {
+    if (!Array.isArray(bookings) || bookings.length === 0) return 0;
+    return (bookings.filter(b => b.status === 'Confirmed').length / bookings.length * 100).toFixed(1);
   };
 
   useEffect(() => {
@@ -44,6 +32,10 @@ const UseHotelDashboard = () => {
 
         const decodedToken = jwtDecode(tokenObj.token);
         const managerId = decodedToken.nameid?.[0];
+
+        if (!managerId) {
+          throw new Error('Manager ID not found');
+        }
 
         const hotelResponse = await axios.get(
           `https://localhost:7125/api/Hotels/by-manager/${managerId}`,
@@ -69,22 +61,15 @@ const UseHotelDashboard = () => {
             }
           );
 
-          setBookings(bookingsResponse.data);
+          const bookingsData = bookingsResponse.data;
+          setBookings(bookingsData);
+
+          // Calculate stats using only available data
           setStats({
-            totalBookings: bookingsResponse.data?.length || 0,
-            occupancyRate: calculateOccupancyRate(
-              bookingsResponse.data,
-              hotelResponse.data.totalRooms
-            ),
-            revenue: calculateTotalRevenue(bookingsResponse.data),
-            availableRooms: Math.max(
-              0,
-              (hotelResponse.data.totalRooms || 0) - 
-              (bookingsResponse.data?.filter(b => 
-                b.status === 'Confirmed' && 
-                new Date(b.checkOutDate) > new Date()
-              ).length || 0)
-            )
+            totalBookings: bookingsData?.length || 0,
+            occupancyRate: calculateOccupancyRate(bookingsData),
+            revenue: 0, // Set to 0 since we don't have totalAmount
+            availableRooms: 0 // Set to 0 since we don't have totalRooms
           });
         }
       } catch (error) {
