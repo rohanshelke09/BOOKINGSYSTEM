@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import axios from 'axios';
+import UseAdminDashboard from '../UseAdminDashboard';
+import DashboardCard from '../DashboardCard';
 
 const DashboardContainer = styled.div`
   padding: 20px;
@@ -9,7 +11,8 @@ const DashboardContainer = styled.div`
 `;
 
 const WelcomeSection = styled.div`
-  background-color: #fff;
+  background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  color: white;
   padding: 30px;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -23,18 +26,6 @@ const CardGrid = styled.div`
   margin-bottom: 30px;
 `;
 
-const Card = styled.div`
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  h3 {
-    color: #2c3e50;
-    margin-bottom: 15px;
-  }
-`;
-
 const ActionButton = styled.button`
   background-color: #007bff;
   color: white;
@@ -42,125 +33,100 @@ const ActionButton = styled.button`
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+  width: 100%;
 
   &:hover {
     background-color: #0056b3;
+    transform: translateY(-2px);
   }
 `;
 
 const AdminDashboard = () => {
-  const [users, setUsers] = useState([]);
-  const [guests, setGuests] = useState([]);
-  const [managers, setManagers] = useState([]);
-  const [hotels, setHotels] = useState([]);
-  const [bookings, setBookings] = useState([]);
-  const [reviews, setReviews] = useState([]);
-  const [showUserOptions, setShowUserOptions] = useState(false); // Added state for user options
+  const navigate = useNavigate();
+  const [showUserOptions, setShowUserOptions] = useState(false);
+  const { 
+    users, guests, managers, hotels, 
+    bookings, reviews, loading, error 
+  } = UseAdminDashboard();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const tokenObj = token ? JSON.parse(token) : null;
+  if (loading) {
+    return <div>Loading dashboard data...</div>;
+  }
 
-        // Fetch users
-        const usersResponse = await axios.get('http://localhost:5217/api/User', {
-          headers: { Authorization: `Bearer ${tokenObj?.token}` },
-        });
-        setUsers(usersResponse.data);
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
 
-        // Fetch guests
-        const guestsResponse = await axios.get('http://localhost:5217/api/User/by-role/guest', {
-          headers: { Authorization: `Bearer ${tokenObj?.token}` },
-        });
-        setGuests(guestsResponse.data);
-
-        // Fetch managers
-        const managersResponse = await axios.get('http://localhost:5217/api/User/by-role/manager', {
-          headers: { Authorization: `Bearer ${tokenObj?.token}` },
-        });
-        setManagers(managersResponse.data);
-
-        // Fetch hotels
-        const hotelsResponse = await axios.get('http://localhost:5217/api/Hotels', {
-          headers: { Authorization: `Bearer ${tokenObj?.token}` },
-        });
-        setHotels(hotelsResponse.data);
-
-        // Fetch bookings
-        const bookingsResponse = await axios.get('http://localhost:5217/api/Bookings', {
-          headers: { Authorization: `Bearer ${tokenObj?.token}` },
-        });
-        setBookings(bookingsResponse.data);
-
-        // Fetch reviews
-        const reviewsResponse = await axios.get('http://localhost:5217/api/Reviews', {
-          headers: { Authorization: `Bearer ${tokenObj?.token}` },
-        });
-        setReviews(reviewsResponse.data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const dashboardItems = [
+    {
+      title: 'Total Users',
+      count: users.length,
+      color: 'blue',
+      bgColor: '#ebf5ff',
+      path: '/manage-users',
+      actions: [
+        { label: 'Manage Guests', path: '/manage-guests' },
+        { label: 'Manage Managers', path: '/manage-managers' }
+      ]
+    },
+    {
+      title: 'Total Hotels',
+      count: hotels.length,
+      color: 'green',
+      bgColor: '#f0fff4',
+      path: '/manage-hotels'
+    },
+    {
+      title: 'Total Bookings',
+      count: bookings.length,
+      color: 'yellow',
+      bgColor: '#fffff0',
+      path: '/manage-bookings'
+    },
+    {
+      title: 'Total Reviews',
+      count: reviews.length,
+      color: 'purple',
+      bgColor: '#faf5ff',
+      path: '/manage-reviews'
+    }
+  ];
 
   return (
     <DashboardContainer>
       <WelcomeSection>
-        <h1>Welcome to Your Dashboard</h1>
-        <p>Manage the Users, Hotel Bookings, and Hotel Reviews</p>
+        <h1>Admin Dashboard</h1>
+        <p>Manage Users, Hotels, Bookings, and Reviews</p>
       </WelcomeSection>
 
       <CardGrid>
-        <Card className="bg-blue-50">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{users.length}</div>
-            <div className="text-sm font-medium text-blue-500">Total Users</div>
-          </div>
-          <ActionButton onClick={() => setShowUserOptions(!showUserOptions)}>
-            Manage Users
-          </ActionButton>
-          {showUserOptions && (
-            <div className="mt-4 text-center">
-              <ActionButton onClick={() => window.location.href = '/manage_guests'}>
-                Manage Guests
-              </ActionButton>
-              <ActionButton onClick={() => window.location.href = '/manage_managers'} className="ml-4">
-                Manage Managers
-              </ActionButton>
-            </div>
-          )}
-        </Card>
-        <Card className="bg-green-50">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{hotels.length}</div>
-            <div className="text-sm font-medium text-green-500">Total Hotels</div>
-          </div>
-          <ActionButton onClick={() => window.location.href = '/manage_hotel'}>
-            Manage Hotels
-          </ActionButton>
-        </Card>
-        <Card className="bg-yellow-50">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-600">{bookings.length}</div>
-            <div className="text-sm font-medium text-yellow-500">Total Bookings</div>
-          </div>
-          <ActionButton onClick={() => window.location.href = '/manage_booking'}>
-            Manage Booking
-          </ActionButton>
-        </Card>
-        <Card className="bg-purple-50">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">{reviews.length}</div>
-            <div className="text-sm font-medium text-purple-500">Total Reviews</div>
-          </div>
-          <ActionButton onClick={() => window.location.href = '/manage_reviews'}>
-            Manage Reviews
-          </ActionButton>
-        </Card>
+        {dashboardItems.map((item) => (
+          <DashboardCard
+            key={item.title}
+            title={item.title}
+            count={item.count}
+            color={item.color}
+            bgColor={item.bgColor}
+          >
+            <ActionButton onClick={() => navigate(item.path)}>
+              Manage {item.title.split(' ')[1]}
+            </ActionButton>
+            {item.actions && (
+              <div className="mt-4">
+                {item.actions.map((action) => (
+                  <ActionButton
+                    key={action.label}
+                    onClick={() => navigate(action.path)}
+                  >
+                    {action.label}
+                  </ActionButton>
+                ))}
+              </div>
+            )}
+          </DashboardCard>
+        ))}
       </CardGrid>
     </DashboardContainer>
   );

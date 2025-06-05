@@ -17,12 +17,8 @@ import GetHotelReviews from './Components/GetHotelReviews';
 import GetAvailableHotels from './Components/GetAvailableHotels';
 import GetAvailableRooms from './Components/GetAvailableRooms';
 import GetRoomsByHotel from './Components/GetRoomsByHotel';
-import BookRoom from './Components/BookRoom';
-import ManageGuests from './Components/Auth/ManageGuests';
-import ManageManagers from './Components/Auth/ManageManagers'; 
 import ManageHotels from './Components/Auth/ManageHotels';
-import ManageBookings from './Components/Auth/ManageBookings';
-import ManageReviews from './Components/Auth/ManageReviews'; // Ensure this import is correct
+
 
 const MainContent = styled.main`
   min-height: calc(100vh - 160px); // Adjust based on header/footer height
@@ -43,10 +39,10 @@ function App() {
           <Route path="/" element={<Home />} />
 
           {/* Admin Routes */}
-          {/* <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/manage-hotels" element={<ManageHotels />} />
-          </Route> */}
+            <Route path="/manage-hotels" element={<ManageHotels />} />
+          </Route>
 
           {/* Manager Routes */}
           <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
