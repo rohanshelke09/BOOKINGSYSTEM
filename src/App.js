@@ -25,6 +25,7 @@ import ManageBookings from './Components/Auth/ManageBookings';
 import UpdateRoom from './Components/UpdateRoom';
 import ViewAllBookings from './Components/ViewAllBookings';
 import ManagerAvailableRooms from './Components/ManagerAvailableRooms';
+import ViewGuests from './Components/ViewGuest';
 
 
 const MainContent = styled.main`
@@ -69,7 +70,7 @@ function App() {
             <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
             <Route path="/bookings" element={<ViewAllBookings />} />
             <Route path="/available-rooms/:hotelID" element={<ManagerAvailableRooms />} />
-
+            <Route path="/hotels/:hotelID/guests" element={<ViewGuests />} />
           </Route>
 
           {/* Guest Routes */}
