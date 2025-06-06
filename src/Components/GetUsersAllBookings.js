@@ -4,7 +4,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import styled from 'styled-components';
 import { FaArrowLeft } from 'react-icons/fa';
-
+import CancelBooking from './CancelBooking';
 const PageContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -90,6 +90,13 @@ const ErrorMessage = styled.div`
   border-radius: 8px;
   margin: 20px 0;
 `;
+const BookingActions = styled.div`
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+`;
 
 const GetUsersAllBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -145,6 +152,16 @@ const GetUsersAllBookings = () => {
       day: 'numeric'
     });
   };
+  const handleCancelSuccess = (bookingId) => {
+    // Update bookings list after successful cancellation
+    setBookings(prevBookings => 
+      prevBookings.map(booking => 
+        booking.bookingID === bookingId 
+          ? { ...booking, status: 'cancelled' }
+          : booking
+      )
+    );
+  };
 
   if (loading) return <LoadingSpinner>Loading your bookings...</LoadingSpinner>;
   if (error) return <ErrorMessage>{error}</ErrorMessage>;
@@ -174,6 +191,14 @@ const GetUsersAllBookings = () => {
                     {booking.status}
                   </StatusBadge>
                 </p>
+                <BookingActions>
+                  {booking.status.toLowerCase() !== 'cancelled' && (
+                    <CancelBooking 
+                      bookingId={booking.bookingID}
+                      onCancelSuccess={() => handleCancelSuccess(booking.bookingID)}
+                    />
+                  )}
+                </BookingActions>
               </BookingCard>
             ))
         ) : (

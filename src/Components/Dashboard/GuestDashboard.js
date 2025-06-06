@@ -241,7 +241,6 @@ const GuestDashboard = () => {
               View All Bookings
             </ViewAllButton>
           </BookingHeader>
-          <h3>Your Bookings</h3>
           
           {loading ? (
             <LoadingSpinner>Loading your bookings...</LoadingSpinner>
