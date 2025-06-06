@@ -1,6 +1,7 @@
-import React from 'react';
-import { Link ,useNavigate} from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { FaBars, FaTimes, FaPhone, FaEnvelope, FaUser } from 'react-icons/fa';
 
 const HeaderContainer = styled.header`
   background-color: #fff;
@@ -16,6 +17,11 @@ const TopBar = styled.div`
   color: #fff;
   padding: 8px 0;
   font-size: 14px;
+  display: none;
+
+  @media (min-width: 768px) {
+    display: block;
+  }
 `;
 
 const TopBarContent = styled.div`
@@ -24,26 +30,71 @@ const TopBarContent = styled.div`
   display: flex;
   justify-content: space-between;
   padding: 0 20px;
+  gap: 10px;
+
+  a {
+    color: #fff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    &:hover {
+      color: #007bff;
+    }
+  }
 `;
 
 const MainHeader = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 15px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
-const Logo = styled.h1`
-  margin: 0;
+const Logo = styled(Link)`
+  text-decoration: none;
   color: #2c3e50;
   font-size: 24px;
+  font-weight: bold;
+
+  &:hover {
+    color: #007bff;
+  }
+`;
+
+const MenuButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  color: #2c3e50;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
 `;
 
 const NavMenu = styled.nav`
   display: flex;
-  gap: 30px;
+  align-items: center;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    display: ${props => props.$isOpen ? 'flex' : 'none'};
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: white;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
 `;
 
 const NavLink = styled(Link)`
@@ -58,25 +109,22 @@ const NavLink = styled(Link)`
     background-color: #f8f9fa;
     color: #007bff;
   }
-`;
 
-const BookNowButton = styled(Link)`
-  background-color: #007bff;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 4px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #0056b3;
+  @media (max-width: 768px) {
+    width: 100%;
+    text-align: center;
   }
 `;
+
 const AuthButtons = styled.div`
   display: flex;
   gap: 15px;
   align-items: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+  }
 `;
 
 const AuthLink = styled(Link)`
@@ -92,12 +140,28 @@ const AuthLink = styled(Link)`
     background-color: #007bff;
     color: white;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    text-align: center;
+  }
 `;
 
 const UserInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
 `;
 
 const LogoutButton = styled.button`
@@ -113,45 +177,75 @@ const LogoutButton = styled.button`
     background-color: #dc3545;
     color: white;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const Header = () => {
-    const navigate = useNavigate();
-    const userRole = localStorage.getItem('userRole');
+  const navigate = useNavigate();
+  const userRole = localStorage.getItem('userRole');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userRole');
-        navigate('/');
-    };
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    navigate('/');
+    setIsMenuOpen(false);
+  };
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleNavClick = () => {
+    setIsMenuOpen(false);
+  };
 
   return (
     <HeaderContainer>
       <TopBar>
         <TopBarContent>
-          <div>📞 +1 234 567 8900</div>
-          <div>✉️ info@smarthotel.com</div>
+          <a href="tel:+12345678900">
+            <FaPhone /> +1 234 567 8900
+          </a>
+          <a href="mailto:info@smarthotel.com">
+            <FaEnvelope /> info@smarthotel.com
+          </a>
         </TopBarContent>
       </TopBar>
       <MainHeader>
-        <Logo>Smart Hotel</Logo>
-        <NavMenu>
-          <NavLink to="/">Home</NavLink>
-          <NavLink to="/about">About</NavLink>
-          <NavLink to="/contact">Contact</NavLink>
+        <Logo to="/">Smart Hotel</Logo>
+        <MenuButton onClick={toggleMenu}>
+          {isMenuOpen ? <FaTimes /> : <FaBars />}
+        </MenuButton>
+        <NavMenu $isOpen={isMenuOpen}>
+          <NavLink to="/" onClick={handleNavClick}>Home</NavLink>
+          <NavLink to="/about" onClick={handleNavClick}>About</NavLink>
+          <NavLink to="/contact" onClick={handleNavClick}>Contact</NavLink>
           {userRole ? (
             <>
-              <NavLink to={`/${userRole}-dashboard`}>Dashboard</NavLink>
+              <NavLink to={`/${userRole}-dashboard`} onClick={handleNavClick}>
+                Dashboard
+              </NavLink>
               <UserInfo>
-                <span>Welcome, {userRole}</span>
-                <LogoutButton onClick={handleLogout}>Logout</LogoutButton>
+                <span>
+                  <FaUser /> Welcome, {userRole}
+                </span>
+                <LogoutButton onClick={handleLogout}>
+                  Logout
+                </LogoutButton>
               </UserInfo>
             </>
           ) : (
             <AuthButtons>
-              <AuthLink to="/login">Login</AuthLink>
-              <AuthLink to="/register">Register</AuthLink>
-             
+              <AuthLink to="/login" onClick={handleNavClick}>
+                Login
+              </AuthLink>
+              <AuthLink to="/register" onClick={handleNavClick}>
+                Register
+              </AuthLink>
             </AuthButtons>
           )}
         </NavMenu>
