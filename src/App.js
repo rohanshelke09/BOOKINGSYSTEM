@@ -23,6 +23,7 @@ import GetRoomsByHotel from './Components/GetRoomsByHotel';
 import ManageHotels from './Components/Auth/ManageHotels';
 import ManageBookings from './Components/Auth/ManageBookings';
 import UpdateRoom from './Components/UpdateRoom';
+import ManageReviews from './Components/Auth/ManageReviews';  // add manage reviews
 import About from './Components/About';
 import Contact from './Components/Contact';
 import SpecialOffers from './Components/SpecialOffers';
@@ -31,6 +32,7 @@ import Payment from './Components/Payment';
 import NotFound from './Components/NotFound';
 import PaymentSuccess from './Components/PaymentSuccess';
 import GetUsersAllBookings from './Components/GetUsersAllBookings';
+
 
 
 const MainContent = styled.main`
@@ -66,6 +68,7 @@ function App() {
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
             <Route path="/manage-reviews" element={<ManageRevews />} />
+
 
           </Route>
 
