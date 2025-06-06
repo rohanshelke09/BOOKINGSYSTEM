@@ -124,7 +124,7 @@ const UserRegistration = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:5217/api/User', formData);
+            const response = await axios.post('https://localhost:7125/api/User', formData);
             setMessage(`Registration successful! Welcome ${response.data.name}`);
             setTimeout(() => {
                 navigate('/login');

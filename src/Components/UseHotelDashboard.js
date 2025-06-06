@@ -95,7 +95,7 @@ const UseHotelDashboard = () => {
 
           // Get rooms
           const roomsResponse = await axios.get(
-            `https://localhost:7125/api/Rooms/${currentHotelId}/rooms`,
+            `https://localhost:7125/api/Rooms/${currentHotelId}`,
             {
               headers: {
                 Authorization: `Bearer ${tokenObj.token}`,

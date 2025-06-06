@@ -69,7 +69,7 @@ const ManageReviews = () => {
     const fetchReviews = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('http://localhost:5217/api/Reviews');
+        const response = await axios.get('https://localhost:7125/api/Reviews');
         setReviews(response.data);
       } catch (err) {
         console.error(err);
@@ -100,7 +100,7 @@ const ManageReviews = () => {
       }
 
       try {
-        await axios.put(`http://localhost:5217/api/Reviews/${reviewId}`, {
+        await axios.put(`https://localhost:7125/api/Reviews/${reviewId}`, {
           reviewID: review.reviewID,
           userID: review.userID,
           hotelID: review.hotelID,
@@ -125,7 +125,7 @@ const ManageReviews = () => {
   const handleDeleteReview = async (reviewId) => {
     if (window.confirm('Are you sure you want to delete this review?')) {
       try {
-        await axios.delete(`http://localhost:5217/api/Reviews/${reviewId}`);
+        await axios.delete(`https://localhost:7125/api/Reviews/${reviewId}`);
         setReviews(prevReviews => 
           prevReviews.filter(review => review.reviewID !== reviewId)
         );
