@@ -145,13 +145,35 @@ const LoadingSpinner = styled.div`
   color: #007bff;
   font-weight: 500;
 `;
+const ViewAllButton = styled(ActionButton)`
+  background-color: transparent;
+  border: 2px solid #007bff;
+  color: #007bff;
+
+  &:hover {
+    background-color: #007bff;
+    color: white;
+  }
+`;
+const BookingHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h3 {
+    margin: 0;
+    border: none;
+    padding: 0;
+  }
+`;
 
 const GuestDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
+  const RECENT_BOOKINGS_COUNT = 1;
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -210,35 +232,53 @@ const GuestDashboard = () => {
 
       <CardGrid>
         <Card>
-          <h3>Your Bookings</h3>
-          <ActionButton onClick={() => navigate('/available-hotels')}>
-            Make New Booking
-          </ActionButton>
+        <BookingHeader>
+            <h3>Recent Bookings</h3>
+            <ViewAllButton 
+              onClick={() => navigate('/usersallbookings')}
+              style={{ margin: 0, width: 'auto' }}
+            >
+              View All Bookings
+            </ViewAllButton>
+          </BookingHeader>
           
           {loading ? (
             <LoadingSpinner>Loading your bookings...</LoadingSpinner>
           ) : error ? (
             <div style={{ color: '#dc3545', padding: '10px' }}>{error}</div>
           ) : bookings.length > 0 ? (
-            bookings.map(booking => (
-              <BookingCard key={booking.bookingID}>
-                <h4>Booking #{booking.bookingID}</h4>
-                <p><strong>Room:</strong> {booking.roomID || 'Not assigned'}</p>
-                <p><strong>Check-in:</strong> {formatDate(booking.checkInDate)}</p>
-                <p><strong>Check-out:</strong> {formatDate(booking.checkOutDate)}</p>
-                <p>
-                  <strong>Status: </strong>
-                  <StatusBadge $status={booking.status}>
-                    {booking.status}
-                  </StatusBadge>
+            <>
+              {bookings
+                .sort((a, b) => new Date(b.checkInDate) - new Date(a.checkInDate))
+                .slice(0, RECENT_BOOKINGS_COUNT)
+                .map(booking => (
+                  <BookingCard key={booking.bookingID}>
+                    <h4>Booking #{booking.bookingID}</h4>
+                    <p><strong>Room:</strong> {booking.roomID || 'Not assigned'}</p>
+                    <p><strong>Check-in:</strong> {formatDate(booking.checkInDate)}</p>
+                    <p><strong>Check-out:</strong> {formatDate(booking.checkOutDate)}</p>
+                    <p>
+                      <strong>Status: </strong>
+                      <StatusBadge $status={booking.status}>
+                        {booking.status}
+                      </StatusBadge>
+                    </p>
+                  </BookingCard>
+                ))}
+              {bookings.length > RECENT_BOOKINGS_COUNT && (
+                <p style={{ textAlign: 'center', color: '#6c757d', marginTop: '15px' }}>
+                  + {bookings.length - RECENT_BOOKINGS_COUNT} more bookings
                 </p>
-              </BookingCard>
-            ))
+              )}
+            </>
           ) : (
             <p style={{ textAlign: 'center', color: '#6c757d' }}>
               No current bookings
             </p>
           )}
+          <ActionButton onClick={() => navigate('/available-hotels')}>
+            Make New Booking
+          </ActionButton>
         </Card>
 
         
