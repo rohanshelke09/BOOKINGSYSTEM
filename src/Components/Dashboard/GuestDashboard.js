@@ -223,7 +223,7 @@ const GuestDashboard = () => {
             bookings.map(booking => (
               <BookingCard key={booking.bookingID}>
                 <h4>Booking #{booking.bookingID}</h4>
-                <p><strong>Room:</strong> {booking.roomNumber || 'Not assigned'}</p>
+                <p><strong>Room:</strong> {booking.roomID || 'Not assigned'}</p>
                 <p><strong>Check-in:</strong> {formatDate(booking.checkInDate)}</p>
                 <p><strong>Check-out:</strong> {formatDate(booking.checkOutDate)}</p>
                 <p>
@@ -241,19 +241,7 @@ const GuestDashboard = () => {
           )}
         </Card>
 
-        <Card>
-          <h3>Quick Services</h3>
-          <ServiceList>
-            <li>24/7 Room Service</li>
-            <li>Premium Housekeeping</li>
-            <li>Personal Concierge</li>
-            <li>Fine Dining Reservations</li>
-            <li>Spa & Wellness</li>
-          </ServiceList>
-          <ActionButton onClick={() => navigate('/services')}>
-            Request Service
-          </ActionButton>
-        </Card>
+        
 
         <Card>
           <h3>Special Offers</h3>

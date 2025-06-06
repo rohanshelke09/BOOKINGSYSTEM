@@ -28,6 +28,8 @@ import About from './Components/About';
 import Contact from './Components/Contact';
 import SpecialOffers from './Components/SpecialOffers';
 import ManageRevews from './Components/Auth/ManageReviews';
+import Payment from './Components/Payment';
+import NotFound from './Components/NotFound';
 
 
 
@@ -55,7 +57,8 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/offers" element={<SpecialOffers />} />
-
+          <Route path="*" element={<NotFound/> } />
+          <Route path="/payment" element={<Payment />} />
 
           {/* Admin Routes */}
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
@@ -75,6 +78,7 @@ function App() {
             <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
             <Route path="/hotel-rooms/:hotelID/update" element={<UpdateRoom />} />
             <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
+       
 
           </Route>
 
@@ -83,7 +87,7 @@ function App() {
             <Route path="/guest-dashboard" element={<GuestDashboard />} />
             {/* <Route path="/booking" element={<Booking />} /> */}
             <Route path="/my-bookings" element={<GetUserBookings />} />
-           
+          
             <Route path="/hotel-reviews/:hotelID" element={<GetHotelReviews />} />
             <Route path="/available-hotels" element={<GetAvailableHotels/>} />
             <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />

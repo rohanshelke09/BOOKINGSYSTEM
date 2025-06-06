@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 const ButtonContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -52,6 +53,7 @@ const Booking = ({ roomID, price, checkIn, checkOut, onBookingComplete }) => {
     const [id, setBookingID] = useState(null);
     const [bookingStatus, setBookingStatus] = useState('pending');
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
   const handleBooking = async () => {
     try {
@@ -76,6 +78,12 @@ const Booking = ({ roomID, price, checkIn, checkOut, onBookingComplete }) => {
         setBookingStatus('booked');
 
       }
+      navigate('/payment', {
+        state: {
+          price: price,
+          bookingID: response.data.bookingID,
+        }
+      });
     } catch (error) {
       setError(error.response?.data?.message || 'Booking failed');
     }
