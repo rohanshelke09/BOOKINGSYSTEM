@@ -120,7 +120,7 @@ const UseHotelDashboard = () => {
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        setError(error.response?.data?.message || 'Failed to load dashboard data');
+        setError(error.response?.data?.message || 'Failed to load dashboard data. Manager is not assigned to any hotel. Kindly contact the site administrator.');
       } finally {
         setLoading(false);
       }

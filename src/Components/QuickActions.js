@@ -83,11 +83,7 @@ const QuickActions = ({ hotelID, onActionClick }) => {
       label: 'View Guests',
       path: `/hotels/${hotelID}/guests`
     },
-    {
-      icon: FaChartBar,
-      label: 'Reports',
-      path: `/hotels/${hotelID}/reports`
-    }
+
   ];
 
   return (
