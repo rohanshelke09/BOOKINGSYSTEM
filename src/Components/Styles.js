@@ -125,3 +125,136 @@ export const ActionButton = styled.button`
     background: ${props => props.$variant === 'outline' ? '#e3f2fd' : '#1c7d98'};
   }
 `;
+
+export const PaymentContainer = styled.div`
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+`;
+
+export const PaymentCard = styled.div`
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+`;
+
+export const PaymentHeader = styled.div`
+  text-align: center;
+  margin-bottom: 30px;
+
+  h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: #6c757d;
+  }
+`;
+
+export const PaymentMethods = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+`;
+
+export const MethodButton = styled.button`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  border: 2px solid ${props => props.$selected ? '#007bff' : '#dee2e6'};
+  border-radius: 10px;
+  background: ${props => props.$selected ? '#f8f9fa' : 'white'};
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #007bff;
+  }
+
+  svg {
+    font-size: 24px;
+    color: #007bff;
+  }
+`;
+
+export const PaymentForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+export const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    color: #2c3e50;
+    font-weight: 500;
+  }
+
+  input, select {
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 16px;
+
+    &:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+  }
+`;
+
+export const PaymentSummary = styled.div`
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+
+  h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+  }
+
+  .amount {
+    font-size: 24px;
+    color: #007bff;
+    font-weight: bold;
+  }
+`;
+
+export const PayButton = styled.button`
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #0056b3;
+  }
+
+  &:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+  }
+`;
+
+export const ErrorMessage = styled.div`
+  color: #dc3545;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  font-size: 14px;
+`;
