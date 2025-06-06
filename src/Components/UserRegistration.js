@@ -179,6 +179,7 @@ const UserRegistration = () => {
 
         setLoading(true);
         try {
+
             const response = await axios.post('https://localhost:7125/api/User', formData, {
                 headers: {
                     'Content-Type': 'application/json'
@@ -191,6 +192,7 @@ const UserRegistration = () => {
                     navigate('/login');
                 }, 2000);
             }
+
         } catch (error) {
             console.error('Registration error:', error);
             setMessage(

@@ -24,6 +24,12 @@ import ManageHotels from './Components/Auth/ManageHotels';
 import ManageBookings from './Components/Auth/ManageBookings';
 import UpdateRoom from './Components/UpdateRoom';
 import ManageReviews from './Components/Auth/ManageReviews';  // add manage reviews
+import About from './Components/About';
+import Contact from './Components/Contact';
+import SpecialOffers from './Components/SpecialOffers';
+import ManageRevews from './Components/Auth/ManageReviews';
+
+
 
 const MainContent = styled.main`
   min-height: calc(100vh - 160px); // Adjust based on header/footer height
@@ -46,6 +52,9 @@ function App() {
           <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
           <Route path="/hotel-reviews/:hotelID" element={<GetHotelReviews />} />
           <Route path="/available-hotels" element={<GetAvailableHotels/>} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/offers" element={<SpecialOffers />} />
 
 
           {/* Admin Routes */}
@@ -54,6 +63,7 @@ function App() {
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
             <Route path="/manage-reviews" element={<ManageReviews />} />
+
           </Route>
 
           {/* Manager Routes */}
