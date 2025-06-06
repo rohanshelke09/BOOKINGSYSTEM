@@ -91,6 +91,23 @@ const Message = styled.div`
   color: ${props => props.isError ? '#721c24' : '#155724'};
 `;
 
+const HelperText = styled.span`
+  color: #666;
+  font-size: 12px;
+  margin-top: 4px;
+  font-style: italic;
+`;
+
+const ValidationMessage = styled.div`
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 4px;
+  font-size: 13px;
+  background-color: ${props => props.type === 'success' ? '#d4edda' : '#fff3cd'};
+  color: ${props => props.type === 'success' ? '#155724' : '#856404'};
+  border: 1px solid ${props => props.type === 'success' ? '#c3e6cb' : '#ffeeba'};
+`;
+
 const UserRegistration = () => {
     const navigate = useNavigate(); 
     const [formData, setFormData] = useState({
@@ -106,13 +123,51 @@ const UserRegistration = () => {
 
     const validateForm = () => {
         const newErrors = {};
-        if (!formData.name.trim()) newErrors.name = "Name is required";
-        if (!formData.email.trim()) newErrors.email = "Email is required";
-        else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
-        if (!formData.password) newErrors.password = "Password is required";
-        else if (formData.password.length < 8) newErrors.password = "Password must be at least 8 characters";
-        if (!formData.contactNumber) newErrors.contactNumber = "Contact number is required";
-        if (!formData.role) newErrors.role = "Role is required";
+        
+        // Name validation
+        if (!formData.name.trim()) {
+            newErrors.name = "Name is required";
+        } else if (!/^[A-Za-z\s]{2,30}$/.test(formData.name.trim())) {
+            newErrors.name = "Name must be 2-30 characters long and contain only letters and spaces";
+        }
+
+        // Email validation
+        if (!formData.email) {
+            newErrors.email = "Email is required";
+        } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)) {
+            newErrors.email = "Invalid email format (example: user@example.com)";
+        }
+
+        // Password validation
+        if (!formData.password) {
+            newErrors.password = "Password is required";
+        } else {
+            const passwordChecks = {
+                length: formData.password.length >= 8,
+                letter: /[A-Za-z]/.test(formData.password),
+                number: /\d/.test(formData.password),
+                special: /[@$!%*#?&]/.test(formData.password)
+            };
+
+            if (!Object.values(passwordChecks).every(Boolean)) {
+                newErrors.password = {
+                    requirements: passwordChecks,
+                    message: "Password must meet all requirements"
+                };
+            }
+        }
+
+        // Contact number validation
+        if (!formData.contactNumber) {
+            newErrors.contactNumber = "Contact number is required";
+        } else if (!/^[1-9][0-9]{9}$/.test(formData.contactNumber)) {
+            newErrors.contactNumber = "Must be 10 digits and start with 1-9";
+        }
+
+        // Role validation
+        if (!formData.role) {
+            newErrors.role = "Please select a role";
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -124,13 +179,25 @@ const UserRegistration = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:5217/api/User', formData);
-            setMessage(`Registration successful! Welcome ${response.data.name}`);
-            setTimeout(() => {
-                navigate('/login');
-            }, 2000);
+            const response = await axios.post('https://localhost:7125/api/User', formData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.data) {
+                setMessage(`Registration successful! Welcome ${response.data.name}`);
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000);
+            }
         } catch (error) {
-            setMessage(error.response?.data?.message || "Registration failed. Please try again.");
+            console.error('Registration error:', error);
+            setMessage(
+                error.response?.data?.message || 
+                error.message || 
+                "Registration failed. Please check if the server is running."
+            );
         } finally {
             setLoading(false);
         }
@@ -152,7 +219,9 @@ const UserRegistration = () => {
                         type="text"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="Enter your full name"
                     />
+                    <HelperText>Use only letters and spaces (2-30 characters)</HelperText>
                     {errors.name && <ErrorText>{errors.name}</ErrorText>}
                 </FormGroup>
 
@@ -163,7 +232,9 @@ const UserRegistration = () => {
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="user@example.com"
                     />
+                    <HelperText>Enter a valid email address</HelperText>
                     {errors.email && <ErrorText>{errors.email}</ErrorText>}
                 </FormGroup>
 
@@ -174,8 +245,28 @@ const UserRegistration = () => {
                         type="password"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder="Enter password"
                     />
-                    {errors.password && <ErrorText>{errors.password}</ErrorText>}
+                    <HelperText>
+                        Password requirements:
+                        {errors.password?.requirements ? (
+                            <ul style={{ margin: "5px 0", paddingLeft: "20px" }}>
+                                <li style={{ color: errors.password.requirements.length ? 'green' : 'red' }}>
+                                    At least 8 characters
+                                </li>
+                                <li style={{ color: errors.password.requirements.letter ? 'green' : 'red' }}>
+                                    At least one letter
+                                </li>
+                                <li style={{ color: errors.password.requirements.number ? 'green' : 'red' }}>
+                                    At least one number
+                                </li>
+                                <li style={{ color: errors.password.requirements.special ? 'green' : 'red' }}>
+                                    At least one special character (@$!%*#?&)
+                                </li>
+                            </ul>
+                        ) : null}
+                    </HelperText>
+                    {errors.password?.message && <ErrorText>{errors.password.message}</ErrorText>}
                 </FormGroup>
 
                 <FormGroup>
@@ -185,7 +276,10 @@ const UserRegistration = () => {
                         type="tel"
                         value={formData.contactNumber}
                         onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
+                        maxLength="10"
+                        placeholder="Enter 10-digit number"
                     />
+                    <HelperText>10 digits starting with 1-9 (e.g., 9876543210)</HelperText>
                     {errors.contactNumber && <ErrorText>{errors.contactNumber}</ErrorText>}
                 </FormGroup>
 
@@ -196,10 +290,11 @@ const UserRegistration = () => {
                         value={formData.role}
                         onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                     >
-                        <option value="">Select Role</option>
+                        <option value="">Select your role</option>
                         <option value="guest">Guest</option>
                         <option value="manager">Manager</option>
                     </Select>
+                    <HelperText>Choose your role in the system</HelperText>
                     {errors.role && <ErrorText>{errors.role}</ErrorText>}
                 </FormGroup>
 

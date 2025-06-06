@@ -23,7 +23,7 @@ import GetRoomsByHotel from './Components/GetRoomsByHotel';
 import ManageHotels from './Components/Auth/ManageHotels';
 import ManageBookings from './Components/Auth/ManageBookings';
 import UpdateRoom from './Components/UpdateRoom';
-
+import ManageReviews from './Components/Auth/ManageReviews';  // add manage reviews
 
 const MainContent = styled.main`
   min-height: calc(100vh - 160px); // Adjust based on header/footer height
@@ -53,6 +53,7 @@ function App() {
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
+            <Route path="/manage-reviews" element={<ManageReviews />} />
           </Route>
 
           {/* Manager Routes */}

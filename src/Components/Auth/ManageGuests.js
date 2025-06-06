@@ -102,7 +102,7 @@ const ManageGuests = () => {
   const fetchGuests = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5217/api/User/by-role/guest');
+      const response = await axios.get('https://localhost:7125/api/User/by-role/guest');
       console.log('Fetched guests:', response.data);
       setGuests(response.data);
     } catch (err) {
@@ -137,7 +137,7 @@ const ManageGuests = () => {
       };
 
       const response = await axios.put(
-        `http://localhost:5217/api/User/${guest.userID}`,
+        `https://localhost:7125/api/User/${guest.userID}`,
         updatedGuest
       );
 
@@ -164,7 +164,7 @@ const ManageGuests = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:5217/api/User/${userID}`);
+      await axios.delete(`https://localhost:7125/api/User/${userID}`);
       setGuests(prevGuests => prevGuests.filter(g => g.userID !== userID));
       await fetchGuests(); // Refresh the list
       alert('Guest deleted successfully!');

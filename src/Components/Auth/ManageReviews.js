@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Container = styled.div`
   max-width: 800px;
@@ -60,7 +61,41 @@ const ActionButton = styled.button`
   }
 `;
 
+const BackButton = styled.button`
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 8px 16px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #5a6268;
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  text-align: center;
+  padding: 20px;
+  color: #007bff;
+  font-size: 18px;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 20px;
+  color: #dc3545;
+  background-color: #ffe6e6;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 800px;
+`;
+
 const ManageReviews = () => {
+  const navigate = useNavigate();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,7 +104,7 @@ const ManageReviews = () => {
     const fetchReviews = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('http://localhost:5217/api/Reviews');
+        const response = await axios.get('https://localhost:7125/api/Reviews');
         setReviews(response.data);
       } catch (err) {
         console.error(err);
@@ -100,7 +135,7 @@ const ManageReviews = () => {
       }
 
       try {
-        await axios.put(`http://localhost:5217/api/Reviews/${reviewId}`, {
+        await axios.put(`https://localhost:7125/api/Reviews/${reviewId}`, {
           reviewID: review.reviewID,
           userID: review.userID,
           hotelID: review.hotelID,
@@ -125,7 +160,7 @@ const ManageReviews = () => {
   const handleDeleteReview = async (reviewId) => {
     if (window.confirm('Are you sure you want to delete this review?')) {
       try {
-        await axios.delete(`http://localhost:5217/api/Reviews/${reviewId}`);
+        await axios.delete(`https://localhost:7125/api/Reviews/${reviewId}`);
         setReviews(prevReviews => 
           prevReviews.filter(review => review.reviewID !== reviewId)
         );
@@ -137,15 +172,28 @@ const ManageReviews = () => {
   };
 
   if (loading) {
-    return <p>Loading reviews...</p>;
+    return (
+      <Container>
+        <LoadingSpinner>
+          <div>Loading reviews...</div>
+        </LoadingSpinner>
+      </Container>
+    );
   }
 
   if (error) {
-    return <p style={{ color: 'red' }}>{error}</p>;
+    return (
+      <Container>
+        <ErrorMessage>{error}</ErrorMessage>
+      </Container>
+    );
   }
 
   return (
     <Container>
+      <BackButton onClick={() => navigate('/admin-dashboard')}>
+        Back to Dashboard
+      </BackButton>
       <Title>Manage Reviews</Title>
       <Table>
         <thead>

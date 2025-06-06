@@ -69,7 +69,7 @@ const ManageManagers = () => {
     const fetchManagers = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('http://localhost:5217/api/User/by-role/manager');
+        const response = await axios.get('https://localhost:7125/api/User/by-role/manager');
         setManagers(response.data);
       } catch (err) {
         setError('Failed to fetch managers. Please try again later.');
@@ -94,7 +94,7 @@ const ManageManagers = () => {
 
   const handleDeleteManager = async (managerId) => {
     try {
-      await axios.delete(`http://localhost:5217/api/User/by-role/manager/${managerId}`);
+      await axios.delete(`https://localhost:7125/api/User/by-role/manager/${managerId}`);
       setManagers(prevManagers => prevManagers.filter(manager => manager.id !== managerId));
     } catch (err) {
       setError('Failed to delete manager. Please try again later.');
