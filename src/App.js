@@ -26,6 +26,8 @@ import UpdateRoom from './Components/UpdateRoom';
 import ViewAllBookings from './Components/ViewAllBookings';
 import ManagerAvailableRooms from './Components/ManagerAvailableRooms';
 import ViewGuests from './Components/ViewGuest';
+import GetBookingByUser from './Components/GetBookingbyUserId';
+import GetBookingByRoom from './Components/GetBookingbyRoomID';
 
 
 const MainContent = styled.main`
@@ -71,6 +73,8 @@ function App() {
             <Route path="/bookings" element={<ViewAllBookings />} />
             <Route path="/available-rooms/:hotelID" element={<ManagerAvailableRooms />} />
             <Route path="/hotels/:hotelID/guests" element={<ViewGuests />} />
+            <Route path="/bookings/user/:hotelID" element={<GetBookingByUser />} />
+            <Route path="/bookings/room/:hotelID" element={<GetBookingByRoom />} />
           </Route>
 
           {/* Guest Routes */}
