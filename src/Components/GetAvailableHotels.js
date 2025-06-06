@@ -212,6 +212,11 @@ const GetAvailableHotels = () => {
                         <CardContent>
                             <HotelName>{hotel.name}</HotelName>
                             <InfoRow>
+                                <span role="img" aria-label=""></span>
+                                <strong>Hotel-Name:</strong> {hotel.hotelName}
+                            </InfoRow>
+                            <InfoRow>
+                                
                                 <span role="img" aria-label="location">📍</span>
                                 <strong>Location:</strong> {hotel.location}
                             </InfoRow>

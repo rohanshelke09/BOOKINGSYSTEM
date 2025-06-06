@@ -71,12 +71,12 @@ const QuickActions = ({ hotelID, onActionClick }) => {
     {
       icon: FaPlus,
       label: 'New Booking',
-      path: `/hotels/${hotelID}/new-booking`
+      path: `/hotel-details/${hotelID}`
     },
     {
       icon: FaBed,
       label: 'Manage Rooms',
-      path: `/hotel-rooms/${hotelID}`
+      path: `/hotel-rooms/${hotelID}/manage`
     },
     {
       icon: FaUsers,

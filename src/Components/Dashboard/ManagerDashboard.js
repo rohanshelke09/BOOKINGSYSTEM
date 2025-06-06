@@ -53,6 +53,7 @@ export const ContentGrid = styled.div`
 `;
 
 
+
 const ManagerDashboard = () => {
   const { 
     hotelDetails, 
