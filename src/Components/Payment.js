@@ -197,11 +197,15 @@ const Payment = () => {
 
       if (response.status === 201) {
         // Payment successful
-        navigate('/', { 
-          state: { 
-            paymentDetails: response.data,
-            bookingID: bookingID
-          }
+        navigate('/payment-success', { 
+            state: { 
+                paymentDetails: {
+                  ...response.data,
+                  amount: price,
+                  paymentMethod
+                },
+                bookingID
+              }
         });
       }
     } catch (err) {
