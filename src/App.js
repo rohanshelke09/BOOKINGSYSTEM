@@ -23,6 +23,8 @@ import GetRoomsByHotel from './Components/GetRoomsByHotel';
 import ManageHotels from './Components/Auth/ManageHotels';
 import ManageBookings from './Components/Auth/ManageBookings';
 import UpdateRoom from './Components/UpdateRoom';
+import ViewAllBookings from './Components/ViewAllBookings';
+import ManagerAvailableRooms from './Components/ManagerAvailableRooms';
 
 
 const MainContent = styled.main`
@@ -53,6 +55,7 @@ function App() {
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
+            
           </Route>
 
           {/* Manager Routes */}
@@ -64,6 +67,8 @@ function App() {
             <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
             <Route path="/hotel-rooms/:hotelID/update" element={<UpdateRoom />} />
             <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
+            <Route path="/bookings" element={<ViewAllBookings />} />
+            <Route path="/available-rooms/:hotelID" element={<ManagerAvailableRooms />} />
 
           </Route>
 

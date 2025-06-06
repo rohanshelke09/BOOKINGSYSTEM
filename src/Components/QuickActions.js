@@ -6,7 +6,8 @@ import {
   FaBed, 
   FaUsers, 
   FaCog, 
-  FaChartBar 
+  FaChartBar ,
+  FaCalendarPlus
 } from 'react-icons/fa';
 
 const QuickActionsContainer = styled.div`
@@ -84,10 +85,13 @@ const QuickActions = ({ hotelID, onActionClick }) => {
       path: `/hotels/${hotelID}/guests`
     },
     {
-      icon: FaChartBar,
-      label: 'Reports',
-      path: `/hotels/${hotelID}/reports`
+      icon: FaCalendarPlus,
+      label: "Available Rooms",
+      
+      iconColor: "#9b59b6", // Purple color for booking
+      path: `/available-rooms/${hotelID}`
     }
+    
   ];
 
   return (
