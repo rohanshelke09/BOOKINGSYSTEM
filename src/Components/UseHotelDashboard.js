@@ -19,7 +19,7 @@ const UseHotelDashboard = () => {
   const calculateOccupancyRate = (bookings) => {
     if (!Array.isArray(bookings) || bookings.length === 0) return 0;
     
-    const confirmedBookings = bookings.filter(booking => booking.status === 'Confirmed');
+    const confirmedBookings = bookings.filter(booking => booking.status === 'confirmed');
     const rate = (confirmedBookings.length / bookings.length) * 100;
     console.log('Occupancy calculation:', {
       confirmed: confirmedBookings.length,
@@ -31,7 +31,7 @@ const UseHotelDashboard = () => {
 
   const calculateAvailableRooms = (rooms) => {
     if (!Array.isArray(rooms)) return 0;
-    const availableRooms = rooms.filter(room => room.status === 'Available');
+    const availableRooms = rooms.filter(room => room.availability === true);
     console.log('Available rooms calculation:', {
       available: availableRooms.length,
       total: rooms.length
@@ -95,7 +95,7 @@ const UseHotelDashboard = () => {
 
           // Get rooms
           const roomsResponse = await axios.get(
-            `https://localhost:7125/api/Rooms/${currentHotelId}`,
+            `https://localhost:7125/api/Rooms/${currentHotelId}/rooms`,
             {
               headers: {
                 Authorization: `Bearer ${tokenObj.token}`,

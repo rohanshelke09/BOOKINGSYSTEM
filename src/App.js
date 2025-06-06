@@ -12,7 +12,9 @@ import AdminDashboard from './Components/Dashboard/AdminDashboard';
 import Home from './Components/Home';
 import GetUserBookings from './Components/GetUserBookings';
 import GetBookingByBookingId from './Components/GetBookingByBookingId';
-
+import AddRoom from './Components/AddRoom';
+import RoomManagement from './Components/RoomManagement';
+import AvailableRooms from './Components/AvailableRooms';
 import GetHotelsById from './Components/GetHotelById';
 import GetHotelReviews from './Components/GetHotelReviews';
 import GetAvailableHotels from './Components/GetAvailableHotels';
@@ -20,6 +22,7 @@ import GetAvailableRooms from './Components/GetAvailableRooms';
 import GetRoomsByHotel from './Components/GetRoomsByHotel';
 import ManageHotels from './Components/Auth/ManageHotels';
 import ManageBookings from './Components/Auth/ManageBookings';
+import UpdateRoom from './Components/UpdateRoom';
 
 
 const MainContent = styled.main`
@@ -40,6 +43,11 @@ function App() {
           <Route path="/register" element={<UserRegistration />} />
           <Route path="/" element={<Home />} />
           <Route path="/hotel-details/:hotelID" element={<GetHotelsById />} />
+          <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
+          <Route path="/hotel-reviews/:hotelID" element={<GetHotelReviews />} />
+          <Route path="/available-hotels" element={<GetAvailableHotels/>} />
+
+
           {/* Admin Routes */}
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
@@ -54,7 +62,9 @@ function App() {
             <Route path="/bookings/:bookingId" element={<GetBookingByBookingId />} />
             <Route path="/hotel-rooms/:hotelID/manage" element={<RoomManagement />} />
             <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
-            <Route path="/hotel-rooms/:hotelID/available" element={<AvailableRooms />} />
+            <Route path="/hotel-rooms/:hotelID/update" element={<UpdateRoom />} />
+            <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
+
           </Route>
 
           {/* Guest Routes */}

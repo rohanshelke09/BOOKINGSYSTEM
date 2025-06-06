@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaPlus, FaPencilAlt, FaTrash, FaList, FaArrowLeft,FaCalendarPlus,FaBed } from 'react-icons/fa';
+import { FaPlus, FaPencilAlt,  FaArrowLeft } from 'react-icons/fa';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -107,39 +107,12 @@ const RoomManagement = () => {
     },
     {
       icon: FaPencilAlt,
-      title: "Update Room",
+      title: "View and Update Rooms",
       description: "Modify existing room details and settings",
       iconColor: "#f39c12",
       path: `/hotel-rooms/${hotelID}/update`
     },
-    {
-      icon: FaTrash,
-      title: "Delete Room",
-      description: "Remove rooms that are no longer needed",
-      iconColor: "#e74c3c",
-      path: `/hotel-rooms/${hotelID}/delete`
-    },
-    {
-      icon: FaList,
-      title: "View Rooms",
-      description: "See all rooms and their current status",
-      iconColor: "#3498db",
-      path: `/hotel-rooms/${hotelID}`
-    },
-    {
-      icon: FaCalendarPlus,
-      title: "Book Room",
-      description: "Create a new booking for available rooms",
-      iconColor: "#9b59b6", 
-      path: `/hotel-rooms/${hotelID}/book`
-    },
-    {
-      icon: FaBed,
-      title: "Available Rooms",
-      description: "View all currently available rooms",
-      iconColor: "#2ecc71", // Green color for availability
-      path: `/hotel-rooms/${hotelID}/available`
-    }
+
   ];
 
   return (
