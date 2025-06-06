@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import { FaBars, FaTimes, FaPhone, FaEnvelope, FaUser } from 'react-icons/fa';
 
 const HeaderContainer = styled.header`
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   position: fixed;
   width: 100%;
   top: 0;
@@ -13,15 +13,10 @@ const HeaderContainer = styled.header`
 `;
 
 const TopBar = styled.div`
-  background-color: #1a1a1a;
-  color: #fff;
-  padding: 8px 0;
-  font-size: 14px;
-  display: none;
-
-  @media (min-width: 768px) {
-    display: block;
-  }
+  background-color: #1e40af; // Tailwind blue-800
+  color: #ffffff;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
 `;
 
 const TopBarContent = styled.div`
@@ -46,22 +41,24 @@ const TopBarContent = styled.div`
 `;
 
 const MainHeader = styled.div`
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 15px 20px;
+  padding: 1rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: #ffffff;
 `;
 
 const Logo = styled(Link)`
   text-decoration: none;
-  color: #2c3e50;
-  font-size: 24px;
-  font-weight: bold;
-
+  color: #1e40af; // Tailwind blue-800
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  
   &:hover {
-    color: #007bff;
+    color: #2563eb; // Tailwind blue-600
   }
 `;
 
@@ -99,15 +96,15 @@ const NavMenu = styled.nav`
 
 const NavLink = styled(Link)`
   text-decoration: none;
-  color: #2c3e50;
+  color: #1f2937; // Tailwind gray-800
   font-weight: 500;
-  padding: 8px 16px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
 
   &:hover {
-    background-color: #f8f9fa;
-    color: #007bff;
+    background-color: #f3f4f6; // Tailwind gray-100
+    color: #1e40af; // Tailwind blue-800
   }
 
   @media (max-width: 768px) {
@@ -129,16 +126,15 @@ const AuthButtons = styled.div`
 
 const AuthLink = styled(Link)`
   text-decoration: none;
-  color: #2c3e50;
+  color: #ffffff;
   font-weight: 500;
-  padding: 8px 16px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  border: 1px solid #007bff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  background-color: #1e40af; // Tailwind blue-800
 
   &:hover {
-    background-color: #007bff;
-    color: white;
+    background-color: #1d4ed8; // Tailwind blue-700
   }
 
   @media (max-width: 768px) {
@@ -165,17 +161,17 @@ const UserInfo = styled.div`
 `;
 
 const LogoutButton = styled.button`
-  background: none;
-  border: 1px solid #dc3545;
-  color: #dc3545;
-  padding: 8px 16px;
-  border-radius: 4px;
+  background-color: #ef4444; // Tailwind red-500
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 
   &:hover {
-    background-color: #dc3545;
-    color: white;
+    background-color: #dc2626; // Tailwind red-600
   }
 
   @media (max-width: 768px) {
@@ -205,16 +201,6 @@ const Header = () => {
 
   return (
     <HeaderContainer>
-      <TopBar>
-        <TopBarContent>
-          <a href="tel:+12345678900">
-            <FaPhone /> +1 234 567 8900
-          </a>
-          <a href="mailto:info@smarthotel.com">
-            <FaEnvelope /> info@smarthotel.com
-          </a>
-        </TopBarContent>
-      </TopBar>
       <MainHeader>
         <Logo to="/">Smart Hotel</Logo>
         <MenuButton onClick={toggleMenu}>

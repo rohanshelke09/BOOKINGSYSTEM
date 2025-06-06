@@ -1,99 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { FiArrowLeft, FiTrash2, FiEdit2, FiSearch } from 'react-icons/fi';
 import axios from 'axios';
+import styled from 'styled-components';
+import {
+  PageContainer,
+  HeaderSection,
+  Title,
+  ContentCard,
+  Table,
+  Th,
+  Td,
+  Tr,
+  ActionButton,
+  ButtonGroup,
+  LoadingSpinner,
+  Message
+} from '../Styles/SharedStyles';
+import EditGuestModal from '../EditGuestModal';
 
-const Container = styled.div`
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-`;
-
-const Title = styled.h2`
-  color: #2c3e50;
+const SearchBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: 600;
-  text-align: center;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-`;
-
-const TableHeader = styled.th`
-  padding: 12px 15px;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  text-align: left;
-  font-weight: 600;
-  color: #2c3e50;
-`;
-
-const TableRow = styled.tr`
-  &:nth-child(even) {
-    background-color: #f8f9fa;
-  }
-  &:hover {
-    background-color: #f5f5f5;
-  }
-`;
-
-const TableCell = styled.td`
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  text-align: left;
-  vertical-align: middle;
-`;
-
-const ActionButton = styled.button`
-  padding: 8px 16px;
-  margin: 0 5px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-  background-color: ${props => (props.variant === 'edit' ? '#007bff' : '#dc3545')};
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: ${props => (props.variant === 'edit' ? '#0056b3' : '#c82333')};
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px ${props => (props.variant === 'edit' ? 'rgba(0,123,255,0.25)' : 'rgba(220,53,69,0.25)')};
-  }
-`;
-
-const ErrorMessage = styled.p`
-  color: #dc3545;
-  text-align: center;
-  margin: 20px 0;
   padding: 10px;
-  background-color: #fff;
-  border-radius: 4px;
-  border: 1px solid #dc3545;
-`;
+  background: #f8fafc;
+  border-radius: 8px;
 
-const LoadingMessage = styled.p`
-  text-align: center;
-  margin: 20px 0;
-  color: #666;
+  input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.95rem;
+
+    &:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    }
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+  }
 `;
 
 const ManageGuests = () => {
+  const navigate = useNavigate();
   const [guests, setGuests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editingGuest, setEditingGuest] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchGuests();
@@ -102,118 +63,191 @@ const ManageGuests = () => {
   const fetchGuests = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('https://localhost:7125/api/User/by-role/guest');
-      console.log('Fetched guests:', response.data);
-      setGuests(response.data);
+      const response = await axios.get('https://localhost:7125/api/User/by-role/guest', {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.data) {
+        setGuests(response.data);
+        setError('');
+      }
     } catch (err) {
       console.error('Fetch error:', err);
-      setError('Failed to fetch guests. Please try again later.');
+      const errorMessage = err.response?.data?.message || 
+                           'Failed to fetch guests. Please try again later.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEditGuest = async (guest) => {
-    const updatedName = prompt('Enter new name:', guest.name);
-    const updatedEmail = prompt('Enter new email:', guest.email);
+  const handleEditClick = (guest) => {
+    setEditingGuest(guest);
+    setSuccessMessage('');
+  };
 
-    if (!updatedName || !updatedEmail) {
-      alert('Both name and email are required');
-      return;
-    }
-
-    if (!updatedEmail.includes('@')) {
-      alert('Please enter a valid email address');
-      return;
-    }
-
+  const handleSaveEdit = async (updatedGuest) => {
     try {
-      const updatedGuest = {
-        userID: guest.userID,
-        name: updatedName,
-        email: updatedEmail,
-        password: guest.password,
-        role: guest.role
+      if (!updatedGuest.name || !updatedGuest.email || !updatedGuest.contactNumber) {
+        window.alert('All fields are required');
+        return;
+      }
+
+      const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      if (!emailRegex.test(updatedGuest.email)) {
+        window.alert('Invalid email format. Example: xyz@mail.com');
+        return;
+      }
+
+      const contactRegex = /^[0-9]{10}$/;
+      if (!contactRegex.test(updatedGuest.contactNumber)) {
+        window.alert('Contact number must be exactly 10 digits');
+        return;
+      }
+
+      const updateData = {
+        name: updatedGuest.name.trim(),
+        email: updatedGuest.email.trim(),
+        contactNumber: updatedGuest.contactNumber,
+        role: "guest",
+        password: ""
       };
 
+      console.log('Sending update request:', updateData);
+
       const response = await axios.put(
-        `https://localhost:7125/api/User/${guest.userID}`,
-        updatedGuest
+        `https://localhost:7125/api/User/${updatedGuest.userID}`,
+        updateData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }
       );
 
-      if (response.data) {
-        setGuests(prevGuests =>
-          prevGuests.map(g =>
-            g.userID === guest.userID
-              ? { ...g, name: updatedName, email: updatedEmail }
-              : g
-          )
-        );
-        await fetchGuests(); // Refresh the list
-        alert('Guest updated successfully!');
+      if (response.status === 204) {
+        setSuccessMessage('Guest updated successfully!');
+        setEditingGuest(null);
+        await fetchGuests();
       }
     } catch (err) {
       console.error('Update error:', err);
-      alert('Failed to update guest information.');
+      let errorMessage = 'Failed to update guest. Please try again.';
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'object') {
+          const errors = Object.values(err.response.data);
+          errorMessage = Array.isArray(errors) ? errors.join('\n') : err.response.data.message;
+        } else {
+          errorMessage = err.response.data;
+        }
+      }
+      
+      window.alert(errorMessage);
     }
   };
 
-  const handleDeleteGuest = async (userID) => {
-    if (!window.confirm('Are you sure you want to delete this guest?')) {
-      return;
-    }
-
+  const handleDeleteClick = async (userID) => {
     try {
-      await axios.delete(`https://localhost:7125/api/User/${userID}`);
-      setGuests(prevGuests => prevGuests.filter(g => g.userID !== userID));
-      await fetchGuests(); // Refresh the list
-      alert('Guest deleted successfully!');
+      if (window.confirm("Are you sure you want to delete this guest? This action cannot be undone.")) {
+        const response = await axios.delete(
+          `https://localhost:7125/api/User/${userID}`,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (response.status === 204) {
+          setSuccessMessage('Guest deleted successfully!');
+          await fetchGuests();
+        }
+      }
     } catch (err) {
-      console.error('Delete error:', err);
-      alert('Failed to delete guest.');
+      const errorMessage = err.response?.data?.message || 
+                         'Failed to delete guest. Please try again.';
+      window.alert(errorMessage);
     }
   };
 
-  if (loading) return <LoadingMessage>Loading guests...</LoadingMessage>;
-  if (error) return <ErrorMessage>{error}</ErrorMessage>;
+  const filteredGuests = guests.filter(guest => 
+    guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    guest.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    guest.contactNumber.includes(searchTerm)
+  );
+
+  if (loading) return (
+    <PageContainer>
+      <LoadingSpinner>Loading guests...</LoadingSpinner>
+    </PageContainer>
+  );
 
   return (
-    <Container>
-      <Title>Manage Guests</Title>
-      <Table>
-        <thead>
-          <tr>
-            <TableHeader>ID</TableHeader>
-            <TableHeader>Name</TableHeader>
-            <TableHeader>Email</TableHeader>
-            <TableHeader>Actions</TableHeader>
-          </tr>
-        </thead>
-        <tbody>
-          {guests.map(guest => (
-            <TableRow key={guest.userID}>
-              <TableCell>{guest.userID}</TableCell>
-              <TableCell>{guest.name}</TableCell>
-              <TableCell>{guest.email}</TableCell>
-              <TableCell>
-                <ActionButton 
-                  variant="edit" 
-                  onClick={() => handleEditGuest(guest)}
-                >
-                  Edit
-                </ActionButton>
-                <ActionButton 
-                  variant="delete" 
-                  onClick={() => handleDeleteGuest(guest.userID)}
-                >
-                  Delete
-                </ActionButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </tbody>
-      </Table>
-    </Container>
+    <PageContainer>
+      <HeaderSection>
+        <ButtonGroup>
+          <ActionButton onClick={() => navigate('/admin-dashboard')}>
+            <FiArrowLeft /> Back to Dashboard
+          </ActionButton>
+        </ButtonGroup>
+        <Title>Manage Guests</Title>
+        <ButtonGroup>
+          <div style={{ width: '120px' }} />
+        </ButtonGroup>
+      </HeaderSection>
+
+      <ContentCard>
+        {error && <Message $type="error">{error}</Message>}
+        {successMessage && <Message $type="success">{successMessage}</Message>}
+
+        <Table>
+          <thead>
+            <tr>
+              <Th>ID</Th>
+              <Th>Name</Th>
+              <Th>Email</Th>
+              <Th>Contact</Th>
+              <Th>Actions</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredGuests.map((guest) => (
+              <Tr key={guest.userID}>
+                <Td>{guest.userID}</Td>
+                <Td>{guest.name}</Td>
+                <Td>{guest.email}</Td>
+                <Td>{guest.contactNumber}</Td>
+                <Td>
+                  <ButtonGroup>
+                    <ActionButton onClick={() => handleEditClick(guest)}>
+                      <FiEdit2 /> Edit
+                    </ActionButton>
+                    <ActionButton $variant="danger" onClick={() => handleDeleteClick(guest.userID)}>
+                      <FiTrash2 /> Delete
+                    </ActionButton>
+                  </ButtonGroup>
+                </Td>
+              </Tr>
+            ))}
+          </tbody>
+        </Table>
+      </ContentCard>
+
+      {editingGuest && (
+        <EditGuestModal
+          guest={editingGuest}
+          onSave={handleSaveEdit}
+          onCancel={() => {
+            setEditingGuest(null);
+            setSuccessMessage('');
+          }}
+        />
+      )}
+    </PageContainer>
   );
 };
 

@@ -1,120 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { FiArrowLeft, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import axios from 'axios';
-
-const Modal = styled.div`
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 500px;
-  z-index: 1000;
-`;
-
-const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1rem;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-`;
-const Container = styled.div`
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-`;
-
-const Title = styled.h2`
-  color: #2c3e50;
-  margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: 600;
-  text-align: center;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-`;
-
-const TableHeader = styled.th`
-  padding: 10px;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  text-align: left;
-  font-weight: 600;
-`;
-
-const TableRow = styled.tr`
-  &:nth-child(even) {
-    background-color: #f8f9fa;
-  }
-`;
-
-const TableCell = styled.td`
-  padding: 10px;
-  border: 1px solid #ddd;
-  text-align: left;
-`;
-
-const ActionButton = styled.button`
-  padding: 8px 12px;
-  margin: 0 5px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  color: white;
-  background-color: ${props => (props.$variant === 'edit' ? '#007bff' : '#dc3545')};
-
-  &:hover {
-    background-color: ${props => (props.$variant === 'edit' ? '#0056b3' : '#c82333')};
-  }
-`;
+import {
+  PageContainer,
+  HeaderSection,
+  Title,
+  ContentCard,
+  Table,
+  Th,
+  Td,
+  Tr,
+  ActionButton,
+  ButtonGroup,
+  Form,
+  FormGroup,
+  Input,
+  Select,
+  Modal,
+  Overlay,
+  Message,
+  LoadingSpinner
+} from '../Styles/SharedStyles';
 
 const ManageBookings = () => {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editingBooking, setEditingBooking] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
   const [editForm, setEditForm] = useState({
-    checkInDate: null,
-    checkOutDate: null,
+    checkInDate: '',
+    checkOutDate: '',
     status: ''
   });
 
@@ -133,6 +51,7 @@ const ManageBookings = () => {
 
     fetchBookings();
   }, []);
+
   const handleEditBooking = (bookingId) => {
     const booking = bookings.find(b => b.bookingID === bookingId);
     if (!booking) {
@@ -140,14 +59,19 @@ const ManageBookings = () => {
       return;
     }
     setEditingBooking(booking);
+    setEditForm({
+      checkInDate: booking.checkInDate,
+      checkOutDate: booking.checkOutDate,
+      status: booking.status
+    });
   };
 
   const handleSaveEdit = async (e) => {
     e.preventDefault();
-    
+
     const checkIn = new Date(editForm.checkInDate);
     const checkOut = new Date(editForm.checkOutDate);
-    
+
     if (checkIn >= checkOut) {
       alert('Check-out date must be after check-in date');
       return;
@@ -179,36 +103,32 @@ const ManageBookings = () => {
           )
         );
         setEditingBooking(null);
-        alert('Booking updated successfully');
+        setSuccessMessage('Booking updated successfully');
       }
     } catch (err) {
       console.error('Update error:', err);
       alert('Failed to update booking. Please try again.');
     }
   };
-  
 
   const handleDeleteBooking = async (bookingId) => {
-    // Add confirmation dialog
     const isConfirmed = window.confirm('Are you sure you want to delete this booking? This action cannot be undone.');
-    
+
     if (!isConfirmed) {
       return;
     }
-  
+
     try {
       const response = await axios.delete(`https://localhost:7125/api/Bookings/${bookingId}`);
       if (response.status === 200) {
         setBookings(prevBookings => prevBookings.filter(booking => booking.bookingID !== bookingId));
-        alert('Booking deleted successfully');
+        setSuccessMessage('Booking deleted successfully');
       }
     } catch (err) {
-      // Handle specific error cases
       if (err.response?.status === 409 || err.response?.status === 500) {
         alert('This booking cannot be deleted because it has related records (payments or reviews). Please remove related records first.');
       } else if (err.response?.status === 404) {
         alert('Booking not found. It may have been already deleted.');
-        // Refresh the bookings list to ensure UI is in sync
         setBookings(prevBookings => prevBookings.filter(booking => booking.bookingID !== bookingId));
       } else {
         alert('Failed to delete booking. Please try again later.');
@@ -225,46 +145,64 @@ const ManageBookings = () => {
     return <p>Loading bookings...</p>;
   }
 
-  if (error) {
-    return <p style={{ color: 'red' }}>{error}</p>;
-  }
-
   return (
-    <Container>
-      <Title>Manage Bookings</Title>
-      <Table>
-        <thead>
-          <tr>
-            <TableHeader>ID</TableHeader>
-            <TableHeader>Guest</TableHeader>
-            <TableHeader>Room</TableHeader>
-            <TableHeader>Check-in</TableHeader>
-            <TableHeader>Check-out</TableHeader>
-            <TableHeader>Status</TableHeader>
-            <TableHeader>Actions</TableHeader>
-          </tr>
-        </thead>
-        <tbody>
-          {bookings.map(booking => (
-            <TableRow key={booking.bookingID}>
-              <TableCell>{booking.bookingID}</TableCell>
-              <TableCell>{booking.user?.name || 'N/A'}</TableCell>
-              <TableCell>{booking.room?.roomID || 'N/A'}</TableCell>
-              <TableCell>{new Date(booking.checkInDate).toLocaleDateString()}</TableCell>
-              <TableCell>{new Date(booking.checkOutDate).toLocaleDateString()}</TableCell>
-              <TableCell>{booking.status}</TableCell>
-              <TableCell>
-                <ActionButton $variant="edit" onClick={() => handleEditBooking(booking.bookingID)}>
-                  Edit
-                </ActionButton>
-                <ActionButton $variant="delete" onClick={() => handleDeleteBooking(booking.bookingID)}>
-                  Delete
-                </ActionButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </tbody>
-      </Table>
+    <PageContainer>
+      <HeaderSection>
+        <ButtonGroup>
+          <ActionButton onClick={() => navigate('/admin-dashboard')}>
+            <FiArrowLeft /> Back
+          </ActionButton>
+        </ButtonGroup>
+        <Title>Manage Bookings</Title>
+      </HeaderSection>
+
+      <ContentCard>
+        {error && <Message $type="error">{error}</Message>}
+        {successMessage && <Message $type="success">{successMessage}</Message>}
+
+        <Table>
+          <thead>
+            <tr>
+              <Th>ID</Th>
+              <Th>Guest</Th>
+              <Th>Room</Th>
+              <Th>Check-in</Th>
+              <Th>Check-out</Th>
+              <Th>Status</Th>
+              <Th>Actions</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {bookings.map(booking => (
+              <Tr key={booking.bookingID}>
+                <Td>{booking.bookingID}</Td>
+                <Td>{booking.user?.name || 'N/A'}</Td>
+                <Td>{booking.room?.roomID || 'N/A'}</Td>
+                <Td>{new Date(booking.checkInDate).toLocaleDateString()}</Td>
+                <Td>{new Date(booking.checkOutDate).toLocaleDateString()}</Td>
+                <Td>{booking.status}</Td>
+                <Td>
+                  <ButtonGroup>
+                    <ActionButton 
+                      $variant="primary"
+                      onClick={() => handleEditBooking(booking.bookingID)}
+                    >
+                      <FiEdit2 />
+                    </ActionButton>
+                    <ActionButton 
+                      $variant="danger"
+                      onClick={() => handleDeleteBooking(booking.bookingID)}
+                    >
+                      <FiTrash2 />
+                    </ActionButton>
+                  </ButtonGroup>
+                </Td>
+              </Tr>
+            ))}
+          </tbody>
+        </Table>
+      </ContentCard>
+
       {editingBooking && (
         <>
           <Overlay onClick={() => setEditingBooking(null)} />
@@ -314,23 +252,22 @@ const ManageBookings = () => {
                 </Select>
               </FormGroup>
 
-              <div>
-                <ActionButton type="submit" $variant="edit">
+              <ButtonGroup>
+                <ActionButton type="submit" $variant="primary">
                   Save Changes
                 </ActionButton>
                 <ActionButton 
-                  type="button" 
-                  $variant="delete" 
+                  type="button"
                   onClick={() => setEditingBooking(null)}
                 >
                   Cancel
                 </ActionButton>
-              </div>
+              </ButtonGroup>
             </Form>
           </Modal>
         </>
       )}
-    </Container>
+    </PageContainer>
   );
 };
 

@@ -27,20 +27,36 @@ import ManageReviews from './Components/Auth/ManageReviews';  // add manage revi
 import About from './Components/About';
 import Contact from './Components/Contact';
 import SpecialOffers from './Components/SpecialOffers';
-import ManageRevews from './Components/Auth/ManageReviews';
+import ManageGuests from './Components/Auth/ManageGuests';
+import ManageManagers from './Components/Auth/ManageManagers';
+import ScrollToTop from './Components/ScrollToTop';
 
 
+// const MainContent = styled.main`
+//   min-height: calc(100vh - 160px); // Adjust based on header/footer height
+//   padding: 10px;
+//   margin-top: 120px; // To account for fixed header
+//   background-color: #f5f5f5;
+// `;
 
 const MainContent = styled.main`
-  min-height: calc(100vh - 160px); // Adjust based on header/footer height
+  min-height: calc(100vh - 160px);
   padding: 20px;
-  margin-top: 120px; // To account for fixed header
+  margin-top: 80px; // Reduced from 120px for better initial view
   background-color: #f5f5f5;
+  position: relative;
+  z-index: 1;
+  
+  @media (max-width: 768px) {
+    margin-top: 60px;
+    padding: 15px;
+  }
 `;
 
 function App() {
   return (
     <BrowserRouter>
+    <ScrollToTop />
     <div className="App">
       <Header />
       <MainContent>
@@ -63,7 +79,8 @@ function App() {
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
             <Route path="/manage-reviews" element={<ManageReviews />} />
-
+            <Route path="/manage-guests" element={<ManageGuests />} />
+            <Route path="/manage-managers" element={<ManageManagers />} />
           </Route>
 
           {/* Manager Routes */}
