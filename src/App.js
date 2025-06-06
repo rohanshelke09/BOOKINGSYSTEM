@@ -23,10 +23,12 @@ import GetRoomsByHotel from './Components/GetRoomsByHotel';
 import ManageHotels from './Components/Auth/ManageHotels';
 import ManageBookings from './Components/Auth/ManageBookings';
 import UpdateRoom from './Components/UpdateRoom';
+import ManageReviews from './Components/Auth/ManageReviews';  // add manage reviews
 import About from './Components/About';
 import Contact from './Components/Contact';
 import SpecialOffers from './Components/SpecialOffers';
 import ManageRevews from './Components/Auth/ManageReviews';
+
 
 
 const MainContent = styled.main`
@@ -60,7 +62,8 @@ function App() {
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
-            <Route path="/manage-reviews" element={<ManageRevews />} />
+            <Route path="/manage-reviews" element={<ManageReviews />} />
+
           </Route>
 
           {/* Manager Routes */}

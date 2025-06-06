@@ -9,7 +9,7 @@ import {
   TableRow,
   TableCell,
   ActionButton2
-} from "C:/Users/2401720/React/bookingsystem/src/Components/Styles.js";
+} from '../Styles';
 
 const ManageHotels = () => {
   const { 
