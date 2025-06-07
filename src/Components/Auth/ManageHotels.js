@@ -9,7 +9,8 @@ import {
   TableRow,
   TableCell,
   ActionButton2
-} from "C:/Users/2401733/OneDrive - Cognizant/Desktop/BOOKINGSYSTEM/src/Components/Styles.js";
+} from '../Styles';
+
 
 const ManageHotels = () => {
   const { 

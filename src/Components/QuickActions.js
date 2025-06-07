@@ -89,6 +89,7 @@ const QuickActions = ({ hotelID, onActionClick }) => {
       label: 'View Guests',
       path: `/hotels/${hotelID}/guests`
     },
+
     {
       icon: FaCalendarPlus,
       label: "Available Rooms",
@@ -109,6 +110,7 @@ const QuickActions = ({ hotelID, onActionClick }) => {
       path: `/bookings/room/${hotelID}`
     }
     
+
   ];
 
   return (
