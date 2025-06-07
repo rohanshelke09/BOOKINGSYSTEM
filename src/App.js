@@ -85,14 +85,13 @@ function App() {
 
           {/* Manager Routes */}
           <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
-            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+            <Route path="/manager-dashboard" element={<ManagerDashboard/>} />
             <Route path="/hotel-rooms/:hotelID" element={<GetRoomsByHotel />} />
             <Route path="/bookings/:bookingId" element={<GetBookingByBookingId />} />
             <Route path="/hotel-rooms/:hotelID/manage" element={<RoomManagement />} />
             <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
             <Route path="/hotel-rooms/:hotelID/update" element={<UpdateRoom />} />
             <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
-
           </Route>
 
           {/* Guest Routes */}

@@ -16,7 +16,7 @@ import {
   ButtonGroup,
   LoadingSpinner,
   Message
-} from '../Styles/SharedStyles';
+} from '../Styles/ManagePageStyles';
 import EditGuestModal from '../EditGuestModal';
 
 const SearchBar = styled.div`

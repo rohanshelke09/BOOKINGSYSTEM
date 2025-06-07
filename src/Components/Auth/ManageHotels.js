@@ -16,7 +16,7 @@ import {
   ButtonGroup,
   LoadingSpinner,
   Message
-} from '../Styles/SharedStyles';
+} from '../Styles/ManagePageStyles';
 import styled from 'styled-components';
 
 const SearchBar = styled.div`

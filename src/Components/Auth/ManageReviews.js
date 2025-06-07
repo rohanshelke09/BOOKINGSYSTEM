@@ -15,8 +15,9 @@ import {
   ButtonGroup,
   LoadingSpinner,
   Message
-} from '../Styles/SharedStyles';
+} from '../Styles/ManagePageStyles';
 import styled from 'styled-components';
+
 
 const SearchBar = styled.div`
   display: flex;
@@ -72,6 +73,7 @@ const ManageReviews = () => {
     }
   };
 
+
   const handleEditReview = async (reviewId) => {
     const review = reviews.find(r => r.reviewID === reviewId);
     if (!review) {
@@ -90,7 +92,7 @@ const ManageReviews = () => {
       }
 
       try {
-        await axios.put(`https://localhost:7125/api/Reviews/${reviewId}`, {
+        await axios.patch(`https://localhost:7125/api/Reviews/${reviewId}`, {
           ...review,
           comment: updatedComment,
           rating: ratingNum
@@ -209,3 +211,4 @@ const ManageReviews = () => {
 };
 
 export default ManageReviews;
+

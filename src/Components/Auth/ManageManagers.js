@@ -16,7 +16,7 @@ import {
   ButtonGroup,
   LoadingSpinner,
   Message
-} from '../Styles/SharedStyles'
+} from '../Styles/ManagePageStyles'
 import EditManagerModal from '../EditManagerModal';
 
 export const SearchBar = styled.div`

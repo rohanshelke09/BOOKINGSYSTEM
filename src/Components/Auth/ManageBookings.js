@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiArrowLeft, FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
 import axios from 'axios';
+import styled from 'styled-components';
 import {
   PageContainer,
   HeaderSection,
@@ -21,7 +22,88 @@ import {
   Overlay,
   Message,
   LoadingSpinner
-} from '../Styles/SharedStyles';
+} from '../Styles/ManagePageStyles';
+
+const SearchBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+
+  input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.95rem;
+
+    &:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    }
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+  }
+`;
+
+const EditModal = styled(Modal)`
+  padding: 2rem;
+  
+  h2 {
+    color: #1f2937;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e5e7eb;
+  }
+`;
+
+const EditForm = styled(Form)`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const EditFormGroup = styled(FormGroup)`
+  label {
+    display: block;
+    font-weight: 500;
+    color: #4b5563;
+    margin-bottom: 0.5rem;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      outline: none;
+    }
+  }
+`;
+
+const ModalButtons = styled(ButtonGroup)`
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+  gap: 1rem;
+
+  button {
+    min-width: 120px;
+  }
+`;
 
 const ManageBookings = () => {
   const navigate = useNavigate();
@@ -35,6 +117,7 @@ const ManageBookings = () => {
     checkOutDate: '',
     status: ''
   });
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -55,50 +138,51 @@ const ManageBookings = () => {
   const handleEditBooking = (bookingId) => {
     const booking = bookings.find(b => b.bookingID === bookingId);
     if (!booking) {
-      alert('Booking not found!');
+      setError('Booking not found!');
       return;
     }
+    // Format dates to YYYY-MM-DD for input fields
+    const formattedCheckIn = new Date(booking.checkInDate).toISOString().split('T')[0];
+    const formattedCheckOut = new Date(booking.checkOutDate).toISOString().split('T')[0];
+    
     setEditingBooking(booking);
     setEditForm({
-      checkInDate: booking.checkInDate,
-      checkOutDate: booking.checkOutDate,
+      checkInDate: formattedCheckIn,
+      checkOutDate: formattedCheckOut,
       status: booking.status
     });
   };
 
   const handleSaveEdit = async (e) => {
     e.preventDefault();
-
-    const checkIn = new Date(editForm.checkInDate);
-    const checkOut = new Date(editForm.checkOutDate);
-
-    if (checkIn >= checkOut) {
-      alert('Check-out date must be after check-in date');
-      return;
-    }
+    setError('');
 
     try {
-      const patchData = {
+      const checkIn = new Date(editForm.checkInDate);
+      const checkOut = new Date(editForm.checkOutDate);
+
+      if (checkIn >= checkOut) {
+        setError('Check-out date must be after check-in date');
+        return;
+      }
+
+      const updatedBooking = {
+        ...editingBooking,
         checkInDate: editForm.checkInDate,
         checkOutDate: editForm.checkOutDate,
         status: editForm.status
       };
 
-      const response = await axios.patch(
+      const response = await axios.put(
         `https://localhost:7125/api/Bookings/${editingBooking.bookingID}`,
-        patchData,
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+        updatedBooking
       );
 
       if (response.data) {
         setBookings(prevBookings =>
           prevBookings.map(b =>
             b.bookingID === editingBooking.bookingID
-              ? { ...b, ...patchData }
+              ? { ...b, ...updatedBooking }
               : b
           )
         );
@@ -106,8 +190,7 @@ const ManageBookings = () => {
         setSuccessMessage('Booking updated successfully');
       }
     } catch (err) {
-      console.error('Update error:', err);
-      alert('Failed to update booking. Please try again.');
+      setError(err.response?.data?.message || 'Failed to update booking. Please try again.');
     }
   };
 
@@ -141,8 +224,18 @@ const ManageBookings = () => {
     }
   };
 
+  const filteredBookings = bookings.filter(booking => 
+    booking.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    booking.status?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    booking.bookingID.toString().includes(searchTerm)
+  );
+
   if (loading) {
-    return <p>Loading bookings...</p>;
+    return (
+      <PageContainer>
+        <LoadingSpinner>Loading bookings...</LoadingSpinner>
+      </PageContainer>
+    );
   }
 
   return (
@@ -150,13 +243,28 @@ const ManageBookings = () => {
       <HeaderSection>
         <ButtonGroup>
           <ActionButton onClick={() => navigate('/admin-dashboard')}>
-            <FiArrowLeft /> Back
+            <FiArrowLeft /> Back to Dashboard
           </ActionButton>
         </ButtonGroup>
         <Title>Manage Bookings</Title>
+        <ButtonGroup>
+          <div style={{ width: '120px' }} />
+        </ButtonGroup>
       </HeaderSection>
 
       <ContentCard>
+        <SearchBar>
+          <input
+            type="text"
+            placeholder="Search bookings by guest name, status or ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <ActionButton>
+            <FiSearch /> Search
+          </ActionButton>
+        </SearchBar>
+
         {error && <Message $type="error">{error}</Message>}
         {successMessage && <Message $type="success">{successMessage}</Message>}
 
@@ -173,7 +281,7 @@ const ManageBookings = () => {
             </tr>
           </thead>
           <tbody>
-            {bookings.map(booking => (
+            {filteredBookings.map(booking => (
               <Tr key={booking.bookingID}>
                 <Td>{booking.bookingID}</Td>
                 <Td>{booking.user?.name || 'N/A'}</Td>
@@ -184,16 +292,15 @@ const ManageBookings = () => {
                 <Td>
                   <ButtonGroup>
                     <ActionButton 
-                      $variant="primary"
                       onClick={() => handleEditBooking(booking.bookingID)}
                     >
-                      <FiEdit2 />
+                      <FiEdit2 /> Edit
                     </ActionButton>
                     <ActionButton 
                       $variant="danger"
                       onClick={() => handleDeleteBooking(booking.bookingID)}
                     >
-                      <FiTrash2 />
+                      <FiTrash2 /> Delete
                     </ActionButton>
                   </ButtonGroup>
                 </Td>
@@ -205,11 +312,16 @@ const ManageBookings = () => {
 
       {editingBooking && (
         <>
-          <Overlay onClick={() => setEditingBooking(null)} />
-          <Modal>
-            <h2>Edit Booking</h2>
-            <Form onSubmit={handleSaveEdit}>
-              <FormGroup>
+          <Overlay onClick={() => {
+            setEditingBooking(null);
+            setError('');
+            setSuccessMessage('');
+          }} />
+          <EditModal onClick={(e) => e.stopPropagation()}>
+            <h2>Edit Booking Details</h2>
+            {error && <Message $type="error">{error}</Message>}
+            <EditForm onSubmit={handleSaveEdit}>
+              <EditFormGroup>
                 <label>Check-in Date</label>
                 <Input
                   type="date"
@@ -220,9 +332,9 @@ const ManageBookings = () => {
                   }))}
                   required
                 />
-              </FormGroup>
+              </EditFormGroup>
 
-              <FormGroup>
+              <EditFormGroup>
                 <label>Check-out Date</label>
                 <Input
                   type="date"
@@ -234,10 +346,10 @@ const ManageBookings = () => {
                   }))}
                   required
                 />
-              </FormGroup>
+              </EditFormGroup>
 
-              <FormGroup>
-                <label>Status</label>
+              <EditFormGroup>
+                <label>Booking Status</label>
                 <Select
                   value={editForm.status}
                   onChange={e => setEditForm(prev => ({ 
@@ -246,25 +358,30 @@ const ManageBookings = () => {
                   }))}
                   required
                 >
+                  <option value="">Select Status</option>
                   <option value="Confirmed">Confirmed</option>
                   <option value="Pending">Pending</option>
                   <option value="Cancelled">Cancelled</option>
                 </Select>
-              </FormGroup>
+              </EditFormGroup>
 
-              <ButtonGroup>
-                <ActionButton type="submit" $variant="primary">
-                  Save Changes
-                </ActionButton>
+              <ModalButtons>
                 <ActionButton 
                   type="button"
-                  onClick={() => setEditingBooking(null)}
+                  onClick={() => {
+                    setEditingBooking(null);
+                    setError('');
+                    setSuccessMessage('');
+                  }}
                 >
                   Cancel
                 </ActionButton>
-              </ButtonGroup>
-            </Form>
-          </Modal>
+                <ActionButton type="submit" $primary>
+                  Save Changes
+                </ActionButton>
+              </ModalButtons>
+            </EditForm>
+          </EditModal>
         </>
       )}
     </PageContainer>
