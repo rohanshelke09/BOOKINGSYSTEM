@@ -11,6 +11,7 @@ import {
   ActionButton2
 } from '../Styles';
 
+
 const ManageHotels = () => {
   const { 
     hotels, 

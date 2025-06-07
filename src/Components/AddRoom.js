@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import styled from 'styled-components';
 
+
 const PageContainer = styled.div`
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -28,19 +29,49 @@ const Title = styled.h2`
 
 const FormGroup = styled.div`
   margin-bottom: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const PriceInputGroup = styled(FormGroup)`
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
 
   &::before {
     content: '₹';
     position: absolute;
     left: 12px;
-    top: 38px;
+    top: 33px;
     color: #34495e;
     font-size: 1rem;
     z-index: 1;
+  }
+
+  input {
+    width: 100%;
+    padding-left: 28px;
+    box-sizing: border-box;
+  }
+`;
+
+const AmenitiesInputGroup = styled(FormGroup)`
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+
+  svg {
+    position: absolute;
+    left: 12px;
+    top: 35px;
+    color: #34495e;
+    opacity: 0.7;
+  }
+
+  input {
+    width: 100%;
+    padding-left: 35px;
+    box-sizing: border-box;
   }
 `;
 
@@ -54,10 +85,12 @@ const Label = styled.label`
 const Input = styled.input`
   width: 100%;
   padding: 0.75rem;
+  padding-left: ${props => props.hasIcon ? '35px' : '0.75rem'};
   border: 1px solid ${props => props.error ? '#e74c3c' : '#cbd5e0'};
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.3s;
+  box-sizing: border-box;
 
   &:focus {
     outline: none;
@@ -74,7 +107,7 @@ const NumberInput = styled(Input)`
   }
   &[type=number] {
     -moz-appearance: textfield;
-    padding-left: 28px;
+    padding-left: 28px !important;
   }
 `;
 
@@ -86,6 +119,7 @@ const Select = styled.select`
   font-size: 1rem;
   background-color: white;
   transition: all 0.3s;
+  box-sizing: border-box;
 
   &:focus {
     outline: none;
@@ -104,6 +138,7 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
   margin-top: 2rem;
+  justify-content: flex-end;
 `;
 
 const Button = styled.button`
@@ -168,6 +203,10 @@ const CheckboxContainer = styled.div`
   input[type="checkbox"] {
     width: auto;
     margin-right: 0.5rem;
+  }
+
+  label {
+    margin-bottom: 0;
   }
 `;
 
@@ -278,6 +317,7 @@ const AddRoom = () => {
         }
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validate()) return;
@@ -363,18 +403,19 @@ const AddRoom = () => {
                         {errorMessage.price && <ErrorText>{errorMessage.price}</ErrorText>}
                     </PriceInputGroup>
 
-                    <FormGroup>
-                        <Label>Features/Amenities*</Label>
-                        <Input
-                            type="text"
-                            error={errorMessage.features}
-                            value={formData.features}
-                            onChange={(e) => setFormData({...formData, features: e.target.value})}
-                            placeholder="WiFi, TV, AC, etc."
-                        />
-                        {errorMessage.features && <ErrorText>{errorMessage.features}</ErrorText>}
-                    </FormGroup>
-
+                    <AmenitiesInputGroup>
+                    <Label>Features/Amenities*</Label>
+                 
+                    <Input
+                        type="text"
+                        hasIcon
+                        error={errorMessage.features}
+                        value={formData.features}
+                        onChange={(e) => setFormData({...formData, features: e.target.value})}
+                        placeholder="WiFi, TV, AC, etc."
+                    />
+                    {errorMessage.features && <ErrorText>{errorMessage.features}</ErrorText>}
+                </AmenitiesInputGroup>
                     <CheckboxContainer>
                         <input
                             type="checkbox"

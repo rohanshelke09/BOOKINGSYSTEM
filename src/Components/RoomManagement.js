@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaPlus, FaPencilAlt,  FaArrowLeft } from 'react-icons/fa';
+import { FaPlus, FaPencilAlt, FaTrash, FaList, FaArrowLeft,FaCalendarPlus } from 'react-icons/fa';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -107,12 +107,20 @@ const RoomManagement = () => {
     },
     {
       icon: FaPencilAlt,
-      title: "View and Update Rooms",
+      title: "Update Room",
       description: "Modify existing room details and settings",
       iconColor: "#f39c12",
       path: `/hotel-rooms/${hotelID}/update`
     },
-
+    
+    {
+      icon: FaList,
+      title: "View Rooms",
+      description: "See all rooms and their current status",
+      iconColor: "#3498db",
+      path: `/hotel-rooms/${hotelID}`
+    },
+    
   ];
 
   return (

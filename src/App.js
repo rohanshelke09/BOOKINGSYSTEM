@@ -23,6 +23,13 @@ import GetRoomsByHotel from './Components/GetRoomsByHotel';
 import ManageHotels from './Components/Auth/ManageHotels';
 import ManageBookings from './Components/Auth/ManageBookings';
 import UpdateRoom from './Components/UpdateRoom';
+
+import ViewAllBookings from './Components/ViewAllBookings';
+import ManagerAvailableRooms from './Components/ManagerAvailableRooms';
+import ViewGuests from './Components/ViewGuest';
+import GetBookingByUser from './Components/GetBookingbyUserId';
+import GetBookingByRoom from './Components/GetBookingbyRoomID';
+
 import ManageReviews from './Components/Auth/ManageReviews';  // add manage reviews
 import About from './Components/About';
 import Contact from './Components/Contact';
@@ -32,6 +39,7 @@ import Payment from './Components/Payment';
 import NotFound from './Components/NotFound';
 import PaymentSuccess from './Components/PaymentSuccess';
 import GetUsersAllBookings from './Components/GetUsersAllBookings';
+
 
 
 
@@ -67,10 +75,10 @@ function App() {
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
+
             <Route path="/manage-reviews" element={<ManageRevews />} />
+           </Route>
 
-
-          </Route>
 
           {/* Manager Routes */}
           <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
@@ -81,7 +89,12 @@ function App() {
             <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
             <Route path="/hotel-rooms/:hotelID/update" element={<UpdateRoom />} />
             <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
-       
+
+            <Route path="/bookings" element={<ViewAllBookings />} />
+            <Route path="/available-rooms/:hotelID" element={<ManagerAvailableRooms />} />
+            <Route path="/hotels/:hotelID/guests" element={<ViewGuests />} />
+            <Route path="/bookings/user/:hotelID" element={<GetBookingByUser />} />
+            <Route path="/bookings/room/:hotelID" element={<GetBookingByRoom />} />
 
           </Route>
 

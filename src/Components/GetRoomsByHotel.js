@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const RoomContainer = styled.div`
   padding: 2rem;
@@ -38,12 +39,15 @@ const RoomCard = styled.div`
   }
 
   .status {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    background: ${props => props.isAvailable ? '#4caf50' : '#f44336'};
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    background: ${props => props.$isAvailable ? '#4caf50' : '#f44336'};
     color: white;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 0.875rem;
+    font-weight: 500;
   }
 
   .price {
@@ -144,14 +148,23 @@ const GetRoomsByHotel = ( {hotelID}) => {
             rooms.map(room => (
               <RoomCard 
                 key={room.roomID}
-                $isAvailable={room.availability} // Added $ prefix for styled-component prop
+                $isAvailable={room.availability} 
               >
                 <h3>Room {room.roomID}</h3>
                 <div className="room-details">
                   <span>Type: {room.type}</span>
                   <span className="price">Price: ${room.price}</span>
                   <span className="status">
-                    {room.availability ? 'Available' : 'Not Available'}
+                  {room.availability ? (
+                  <>
+                    <FaCheckCircle />
+                    Available
+                  </>
+                ) : (
+                  <>
+                    <FaTimesCircle />
+                    Not Available
+                  </>)}
                   </span>
                   <p>{room.features}</p>
                 </div>

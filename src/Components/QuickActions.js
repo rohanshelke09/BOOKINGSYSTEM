@@ -6,7 +6,10 @@ import {
   FaBed, 
   FaUsers, 
   FaCog, 
-  FaChartBar 
+  FaChartBar ,
+  FaCalendarPlus,
+  FaUserClock,   
+  FaDoorOpen   
 } from 'react-icons/fa';
 
 const QuickActionsContainer = styled.div`
@@ -28,6 +31,9 @@ const ActionGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+  @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
 const ActionButton = styled.button`
@@ -83,6 +89,27 @@ const QuickActions = ({ hotelID, onActionClick }) => {
       label: 'View Guests',
       path: `/hotels/${hotelID}/guests`
     },
+
+    {
+      icon: FaCalendarPlus,
+      label: "Available Rooms",
+      
+      iconColor: "#9b59b6", // Purple color for booking
+      path: `/available-rooms/${hotelID}`
+    },
+    {
+      icon: FaUserClock,
+      label: "User Booking",
+      iconColor: "#e17055",
+      path: `/bookings/user/${hotelID}`
+    },
+    {
+      icon: FaDoorOpen,
+      label: "Room-Booking",
+      iconColor: "#00b894",
+      path: `/bookings/room/${hotelID}`
+    }
+    
 
   ];
 
