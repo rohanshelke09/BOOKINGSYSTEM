@@ -136,7 +136,7 @@ const ManageGuests = () => {
         role: guest.role
       };
 
-      const response = await axios.put(
+      const response = await axios.patch(
         `https://localhost:7125/api/User/${guest.userID}`,
         updatedGuest
       );
