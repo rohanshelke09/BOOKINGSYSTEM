@@ -1,145 +1,192 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
+import { FiArrowLeft, FiUserPlus, FiTrash2, FiSearch } from 'react-icons/fi';
 import axios from 'axios';
+import styled from 'styled-components';
+import {
+  PageContainer,
+  HeaderSection,
+  Title,
+  ContentCard,
+  Table,
+  Th,
+  Td,
+  Tr,
+  ActionButton,
+  ButtonGroup,
+  LoadingSpinner,
+  Message
+} from '../Styles/ManagePageStyles'
+import EditManagerModal from '../EditManagerModal';
 
-const Container = styled.div`
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-`;
-
-const Title = styled.h2`
-  color: #2c3e50;
+export const SearchBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: 600;
-  text-align: center;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-`;
-
-const TableHeader = styled.th`
   padding: 10px;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  text-align: left;
-  font-weight: 600;
-`;
+  background: #f8fafc;
+  border-radius: 8px;
 
-const TableRow = styled.tr`
-  &:nth-child(even) {
-    background-color: #f8f9fa;
+  input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.95rem;
+
+    &:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    }
+
+    &::placeholder {
+      color: #94a3b8;
+    }
   }
-`;
 
-const TableCell = styled.td`
-  padding: 10px;
-  border: 1px solid #ddd;
-  text-align: left;
-`;
-
-const ActionButton = styled.button`
-  padding: 8px 12px;
-  margin: 0 5px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  color: white;
-  background-color: ${props => (props.variant === 'edit' ? '#007bff' : '#dc3545')};
-
-  &:hover {
-    background-color: ${props => (props.variant === 'edit' ? '#0056b3' : '#c82333')};
+  button {
+    padding: 10px 20px;
   }
 `;
 
 const ManageManagers = () => {
+  const navigate = useNavigate();
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isAddingManager, setIsAddingManager] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    const fetchManagers = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get('https://localhost:7125/api/User/by-role/manager');
-        setManagers(response.data);
-      } catch (err) {
-        setError('Failed to fetch managers. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchManagers();
   }, []);
 
-  const handleEditManager = (managerId) => {
-    const manager = managers.find(m => m.id === managerId);
-    const updatedName = prompt('Enter new name:', manager.name);
-    if (updatedName) {
-      const updatedManagers = managers.map(m =>
-        m.id === managerId ? { ...m, name: updatedName } : m
-      );
-      setManagers(updatedManagers);
-    }
-  };
-
-  const handleDeleteManager = async (managerId) => {
+  const fetchManagers = async () => {
+    setLoading(true);
     try {
-      await axios.delete(`https://localhost:7125/api/User/by-role/manager/${managerId}`);
-      setManagers(prevManagers => prevManagers.filter(manager => manager.id !== managerId));
+      const response = await axios.get('https://localhost:7125/api/User/by-role/manager');
+      setManagers(response.data);
+      setError(null);
     } catch (err) {
-      setError('Failed to delete manager. Please try again later.');
+      setError('Failed to fetch managers. Please try again.');
+      console.error('Fetch error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return <p>Loading managers...</p>;
-  }
+  const handleAddManager = async (newManager) => {
+    try {
+      const response = await axios.post(
+        'https://localhost:7125/api/User',
+        { ...newManager, role: 'manager' }
+      );
 
-  if (error) {
-    return <p style={{ color: 'red' }}>{error}</p>;
-  }
+      if (response.status === 201) {
+        setSuccessMessage('Manager added successfully!');
+        setIsAddingManager(false);
+        await fetchManagers();
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Failed to add manager';
+      window.alert(errorMessage);
+    }
+  };
+
+  const handleDeleteClick = async (userID) => {
+    if (!window.confirm('Are you sure you want to delete this manager? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(
+        `https://localhost:7125/api/User/${userID}`,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.status === 204 || response.status === 200) {
+        setSuccessMessage('Manager deleted successfully!');
+        setManagers(prevManagers => prevManagers.filter(manager => manager.userID !== userID));
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data || 
+                          'Failed to delete manager. Please try again.';
+      window.alert(errorMessage);
+      setError(errorMessage);
+    }
+  };
 
   return (
-    <Container>
-      <Title>Manage Managers</Title>
-      <Table>
-        <thead>
-          <tr>
-            <TableHeader>ID</TableHeader>
-            <TableHeader>Name</TableHeader>
-            <TableHeader>Email</TableHeader>
-            <TableHeader>Actions</TableHeader>
-          </tr>
-        </thead>
-        <tbody>
-          {managers.map(manager => (
-            <TableRow key={manager.id}>
-              <TableCell>{manager.id}</TableCell>
-              <TableCell>{manager.name}</TableCell>
-              <TableCell>{manager.email}</TableCell>
-              <TableCell>
-                <ActionButton variant="edit" onClick={() => handleEditManager(manager.id)}>
-                  Edit
-                </ActionButton>
-                <ActionButton variant="delete" onClick={() => handleDeleteManager(manager.id)}>
-                  Delete
-                </ActionButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </tbody>
-      </Table>
-    </Container>
+    <PageContainer>
+      <HeaderSection>
+        <ButtonGroup>
+          <ActionButton onClick={() => navigate('/admin-dashboard')}>
+            <FiArrowLeft /> Back to Dashboard
+          </ActionButton>
+        </ButtonGroup>
+        <Title>Manage Managers</Title>
+        <ButtonGroup>
+          <ActionButton $variant="primary" onClick={() => setIsAddingManager(true)}>
+            <FiUserPlus /> Add Manager
+          </ActionButton>
+        </ButtonGroup>
+      </HeaderSection>
+
+      <ContentCard>
+       
+        {error && <Message $type="error">{error}</Message>}
+        {successMessage && <Message $type="success">{successMessage}</Message>}
+
+        {loading ? (
+          <LoadingSpinner>Loading managers...</LoadingSpinner>
+        ) : (
+          <Table>
+            <thead>
+              <tr>
+                <Th>ID</Th>
+                <Th>Name</Th>
+                <Th>Email</Th>
+                <Th>Contact</Th>
+                <Th>Actions</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {managers.map((manager) => (
+                <Tr key={manager.userID}>
+                  <Td>{manager.userID}</Td>
+                  <Td>{manager.name}</Td>
+                  <Td>{manager.email}</Td>
+                  <Td>{manager.contactNumber}</Td>
+                  <Td>
+                    <ActionButton $variant="danger" onClick={() => handleDeleteClick(manager.userID)}>
+                      <FiTrash2 /> Delete
+                    </ActionButton>
+                  </Td>
+                </Tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
+      </ContentCard>
+
+      {isAddingManager && (
+        <EditManagerModal
+          isAdd={true}
+          manager={null}
+          onSave={handleAddManager}
+          onCancel={() => setIsAddingManager(false)}
+        />
+      )}
+    </PageContainer>
   );
 };
 

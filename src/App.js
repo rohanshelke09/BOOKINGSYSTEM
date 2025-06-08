@@ -35,24 +35,27 @@ import About from './Components/About';
 import Contact from './Components/Contact';
 import SpecialOffers from './Components/SpecialOffers';
 import ManageRevews from './Components/Auth/ManageReviews';
-import Payment from './Components/Payment';
-import NotFound from './Components/NotFound';
-import PaymentSuccess from './Components/PaymentSuccess';
-import GetUsersAllBookings from './Components/GetUsersAllBookings';
-
 
 
 
 const MainContent = styled.main`
-  min-height: calc(100vh - 160px); // Adjust based on header/footer height
+  min-height: calc(100vh - 160px);
   padding: 20px;
-  margin-top: 120px; // To account for fixed header
+  margin-top: 80px; // Reduced from 120px for better initial view
   background-color: #f5f5f5;
+  position: relative;
+  z-index: 1;
+  
+  @media (max-width: 768px) {
+    margin-top: 60px;
+    padding: 15px;
+  }
 `;
 
 function App() {
   return (
     <BrowserRouter>
+    <ScrollToTop />
     <div className="App">
       <Header />
       <MainContent>
@@ -75,26 +78,20 @@ function App() {
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
+            <Route path="/manage-reviews" element={<ManageReviews />} />
 
-            <Route path="/manage-reviews" element={<ManageRevews />} />
-           </Route>
+          </Route>
 
 
           {/* Manager Routes */}
           <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
-            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+            <Route path="/manager-dashboard" element={<ManagerDashboard/>} />
             <Route path="/hotel-rooms/:hotelID" element={<GetRoomsByHotel />} />
             <Route path="/bookings/:bookingId" element={<GetBookingByBookingId />} />
             <Route path="/hotel-rooms/:hotelID/manage" element={<RoomManagement />} />
             <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
             <Route path="/hotel-rooms/:hotelID/update" element={<UpdateRoom />} />
             <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
-
-            <Route path="/bookings" element={<ViewAllBookings />} />
-            <Route path="/available-rooms/:hotelID" element={<ManagerAvailableRooms />} />
-            <Route path="/hotels/:hotelID/guests" element={<ViewGuests />} />
-            <Route path="/bookings/user/:hotelID" element={<GetBookingByUser />} />
-            <Route path="/bookings/room/:hotelID" element={<GetBookingByRoom />} />
 
           </Route>
 

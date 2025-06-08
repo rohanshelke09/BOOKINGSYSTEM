@@ -3,18 +3,18 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 
 const FooterContainer = styled.footer`
-  background-color: #1a1a1a;
-  color: #fff;
-  padding: 60px 0 20px;
+  background-color: #1e40af; // Tailwind blue-800
+  color: #ffffff;
+  padding: 4rem 0 1.5rem;
 `;
 
 const FooterContent = styled.div`
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 40px;
-  padding: 0 20px;
+  gap: 2.5rem;
+  padding: 0 1.5rem;
 
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
@@ -27,9 +27,16 @@ const FooterContent = styled.div`
 
 const FooterSection = styled.div`
   h3 {
-    color: #fff;
-    margin-bottom: 20px;
-    font-size: 18px;
+    color: #ffffff;
+    margin-bottom: 1.25rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+  }
+
+  p {
+    color: #e5e7eb; // Tailwind gray-200
+    line-height: 1.625;
   }
 
   ul {
@@ -39,26 +46,47 @@ const FooterSection = styled.div`
   }
 
   li {
-    margin-bottom: 10px;
+    margin-bottom: 0.75rem;
+    color: #e5e7eb; // Tailwind gray-200
   }
 
   a {
-    color: #9ca3af;
+    color: #e5e7eb; // Tailwind gray-200
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 
     &:hover {
-      color: #fff;
+      color: #ffffff;
     }
   }
 `;
 
 const Copyright = styled.div`
   text-align: center;
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid #333;
-  color: #9ca3af;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e5e7eb; // Tailwind gray-200
+  font-size: 0.875rem;
+`;
+
+const SocialLink = styled.a`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
 `;
 
 const Footer = () => {

@@ -2,15 +2,37 @@ import React from 'react';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 
-const Card = styled.div`
-  background-color: ${props => props.$bgColor || '#fff'};
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
+const StyledCard = styled.div`
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
 
   &:hover {
     transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  h2 {
+    color: #1f2937;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+  }
+
+  .count {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: ${props => props.color || '#4f46e5'};
+    margin-bottom: 20px;
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 `;
 
@@ -22,13 +44,13 @@ const DashboardCard = ({
   onManage, 
   children 
 }) => (
-  <Card $bgColor={bgColor}>
+  <StyledCard color={color}>
     <div className="text-center">
-      <div className={`text-2xl font-bold text-${color}-600`}>{count}</div>
-      <div className={`text-sm font-medium text-${color}-500`}>{title}</div>
+      <div className="count">{count}</div>
+      <h2>{title}</h2>
     </div>
     {children}
-  </Card>
+  </StyledCard>
 );
 
 DashboardCard.propTypes = {
