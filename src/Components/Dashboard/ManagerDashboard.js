@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -52,7 +51,30 @@ export const ContentGrid = styled.div`
   gap: 1.5rem;
 `;
 
+const ErrorDisplay = styled.div`
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 2rem;
+  border-radius: 15px;
+  margin: 2rem auto;
+  max-width: 600px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 
+  h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+`;
+
+const LoadingDisplay = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  font-size: 1.2rem;
+  color: #6b7280;
+`;
 
 const ManagerDashboard = () => {
   const { 
@@ -65,8 +87,23 @@ const ManagerDashboard = () => {
   } = UseHotelDashboard();
   const navigate = useNavigate();
 
+  if (loading) {
+    return (
+      <DashboardContainer>
+        <LoadingDisplay>Loading dashboard data...</LoadingDisplay>
+      </DashboardContainer>
+    );
+  }
+
   if (error) {
-    return <div className="error-message">{error}</div>;
+    return (
+      <DashboardContainer>
+        <ErrorDisplay>
+          <h2>Dashboard Error</h2>
+          <p>{error}</p>
+        </ErrorDisplay>
+      </DashboardContainer>
+    );
   }
 
   const statsCards = [
@@ -132,5 +169,5 @@ const ManagerDashboard = () => {
 
 export default ManagerDashboard;
 
- 
+
 
