@@ -92,7 +92,26 @@ const FilterSection = styled.div`
   gap: 15px;
   flex-wrap: wrap;
 `;
+const StatusSelect = styled.select`
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  color: #2c3e50;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
 
+  &:hover {
+    border-color: #007bff;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+`;
 const FilterButton = styled.button`
   padding: 8px 16px;
   border: 2px solid #007bff;
@@ -115,6 +134,7 @@ const GetBookingsByHotel = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [updatingStatus, setUpdatingStatus] = useState(null);
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -157,7 +177,44 @@ const GetBookingsByHotel = () => {
       day: 'numeric'
     });
   };
-
+  const handleStatusChange = async (bookingId, newStatus) => {
+    setUpdatingStatus(bookingId);
+    try {
+      const token = localStorage.getItem('token');
+      const tokenObj = token ? JSON.parse(token) : null;
+  
+      if (!tokenObj?.token) {
+        throw new Error('Authentication required');
+      }
+  
+      const response = await axios.patch(
+        `https://localhost:7125/api/Bookings/${bookingId}`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${tokenObj.token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+  
+      if (response.status === 200) {
+        // Update local state
+        setBookings(prevBookings =>
+          prevBookings.map(booking =>
+            booking.bookingID === bookingId
+              ? { ...booking, status: newStatus }
+              : booking
+          )
+        );
+      }
+    } catch (err) {
+      console.error('Error updating booking status:', err);
+      alert('Failed to update booking status');
+    } finally {
+    setUpdatingStatus(null);
+  }
+  };
   const filteredBookings = bookings.filter(booking => {
     if (filter === 'all') return true;
     return booking.status.toLowerCase() === filter.toLowerCase();
@@ -224,11 +281,27 @@ const GetBookingsByHotel = () => {
                   </div>
                 </BookingInfo>
                 <BookingInfo>
-                  <strong>Status: </strong>
-                  <StatusBadge $status={booking.status}>
-                    {booking.status}
-                  </StatusBadge>
-                </BookingInfo>
+  <strong>Status: </strong>
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+    <StatusBadge $status={booking.status}>
+      {booking.status}
+    </StatusBadge>
+    <StatusSelect
+  value={booking.status}
+  onChange={(e) => handleStatusChange(booking.bookingID, e.target.value)}
+  disabled={updatingStatus === booking.bookingID}
+>
+  <option value="Confirmed">Confirmed</option>
+  <option value="Pending">Pending</option>
+  <option value="Cancelled">Cancelled</option>
+</StatusSelect>
+{updatingStatus === booking.bookingID && (
+  <span style={{ color: '#007bff', fontSize: '0.875rem' }}>
+    Updating...
+  </span>
+)}
+  </div>
+</BookingInfo>
               </BookingCard>
             ))
         ) : (
