@@ -1,176 +1,174 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from 'styled-components';
 import axios from 'axios';
+import { FiSearch } from 'react-icons/fi';
 import SearchResults from './SearchResults';
 
 const Container = styled.div`
-  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-              url('/images/362619.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
   min-height: 100vh;
-  padding: 20px;
+  background: linear-gradient(135deg, #1a1f35 0%, #2d3250 100%);
+  padding: 40px 20px;
 `;
 
-const SearchContainer = styled.div`
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+const SearchSection = styled.div`
+  max-width: 800px;
+  margin: 0 auto 40px;
 `;
 
 const Title = styled.h1`
-  text-align: center;
   color: white;
-  margin-top: 2px;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+`;
+
+const SearchForm = styled.form`
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+`;
+
+const SearchBar = styled.div`
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 50px;
+  padding: 8px 8px 8px 25px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 `;
 
 const SearchInput = styled.input`
-  width: 50%;
-  padding: 9px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  margin-bottom: 20px;
-`;
-
-const ToggleButton = styled.button`
-  background: none;
+  flex: 1;
   border: none;
-  color: #007bff;
-  cursor: pointer;
-  margin-bottom: 20px;
-`;
-
-const SearchButton = styled.button`
-  width: 100%;
+  outline: none;
   padding: 12px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
+  font-size: 1.1rem;
+  background: transparent;
+  color: #1f2937;
 
-  &:hover {
-    background-color: #0056b3;
+  &::placeholder {
+    color: #9ca3af;
   }
 `;
 
-const AmenitiesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
+const SearchButton = styled.button`
+  background: #4f46e5;
+  color: white;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #4338ca;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 `;
 
-const AMENITIES = ["WiFi", "Parking", "Pool", "Gym", "Restaurant"];
-
 const Home = () => {
-    const [searchParams, setSearchParams] = useState({
-        location: '',
-        amenities: []
-    });
-    const [hotels, setHotels] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-    const [showResults, setShowResults] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-    const handleSearch = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setShowResults(true);
+  useEffect(() => {
+    fetchAllHotels();
+  }, []);
 
-        try {
-            const token = localStorage.getItem('token');
-            const tokenObj = token ? JSON.parse(token) : null;
+  const fetchAllHotels = async () => {
+    try {
+      const response = await axios.get('https://localhost:7125/api/Hotels');
+      setHotels(response.data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to fetch hotels');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            const response = await axios.get('https://localhost:7125/api/Hotels/Search', {
-                params: {
-                    location: searchParams.location,
-                    amenities: searchParams.amenities.join(',')
-                },
-                headers: {
-                    Authorization: `Bearer ${tokenObj?.token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-            setHotels(response.data);
-        } catch (err) {
-            setError('Failed to fetch hotels. Please try again.');
-            console.error('Search failed:', err);
-        } finally {
-            setLoading(false);
+    if (!searchTerm.trim()) {
+      fetchAllHotels();
+      return;
+    }
+
+    try {
+      const response = await axios.get('https://localhost:7125/api/Hotels/Search', {
+        params: {
+          searchTerm: searchTerm.trim().toLowerCase(),
+          fields: ['name', 'location', 'description']
         }
-    };
+      });
 
-    const handleAmenityChange = (amenity) => {
-        setSearchParams(prev => ({
-            ...prev,
-            amenities: prev.amenities.includes(amenity)
-                ? prev.amenities.filter(a => a !== amenity)
-                : [...prev.amenities, amenity]
-        }));
-    };
+      if (response.data.length === 0) {
+        setError('No hotels found matching your search.');
+        setHotels([]);
+      } else {
+        setHotels(response.data);
+        setError(null);
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+      setError('Search failed. Please try again.');
+      setHotels([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <Container>
-            <Title>Welcome to Hotel Booking System</Title>
-            <SearchContainer>
-                <form onSubmit={handleSearch}>
-                    <SearchInput
-                        type="text"
-                        placeholder="Search by location..."
-                        value={searchParams.location}
-                        onChange={(e) => setSearchParams(prev => ({
-                            ...prev,
-                            location: e.target.value
-                        }))}
-                    />
+  // Auto-search as user types (with debounce)
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      if (searchTerm) {
+        handleSearch({ preventDefault: () => {} });
+      }
+    }, 500);
 
-                    <ToggleButton
-                        type="button"
-                        onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-                    >
-                        {showAdvancedSearch ? "Hide" : "Show"} Advanced Search Options
-                    </ToggleButton>
+    return () => clearTimeout(delaySearch);
+  }, [searchTerm]);
 
-                    {showAdvancedSearch && (
-                        <AmenitiesGrid>
-                            {AMENITIES.map((amenity) => (
-                                <label key={amenity}>
-                                    <input
-                                        type="checkbox"
-                                        checked={searchParams.amenities.includes(amenity)}
-                                        onChange={() => handleAmenityChange(amenity)}
-                                    />
-                                    {amenity}
-                                </label>
-                            ))}
-                        </AmenitiesGrid>
-                    )}
+  return (
+    <Container>
+      <SearchSection>
+        <Title>Find Your Perfect Stay</Title>
+        <SearchForm onSubmit={handleSearch}>
+          <SearchBar>
+            <SearchInput
+              type="text"
+              placeholder="Enter location or hotel name"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoComplete="off"
+            />
+            <SearchButton type="submit">
+              <FiSearch size={20} />
+            </SearchButton>
+          </SearchBar>
+        </SearchForm>
+      </SearchSection>
 
-                    <SearchButton type="submit">
-                        Search Hotels
-                    </SearchButton>
-                </form>
-            </SearchContainer>
-
-            {showResults && (
-                <SearchResults 
-                    hotels={hotels}
-                    loading={loading}
-                    error={error}
-                />
-            )}
-        </Container>
-    );
+      <SearchResults 
+        hotels={hotels}
+        loading={loading}
+        error={error}
+      />
+    </Container>
+  );
 };
 
 export default Home;

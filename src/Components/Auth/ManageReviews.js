@@ -1,97 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { FiArrowLeft, FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
+import axios from 'axios';
+import {
+  PageContainer,
+  HeaderSection,
+  Title,
+  ContentCard,
+  Table,
+  Th,
+  Td,
+  Tr,
+  ActionButton,
+  ButtonGroup,
+  LoadingSpinner,
+  Message
+} from '../Styles/ManagePageStyles';
+import styled from 'styled-components';
 
-const Container = styled.div`
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-`;
 
-const Title = styled.h2`
-  color: #2c3e50;
+const SearchBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: 600;
-  text-align: center;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-`;
-
-const TableHeader = styled.th`
   padding: 10px;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  text-align: left;
-  font-weight: 600;
-`;
-
-const TableRow = styled.tr`
-  &:nth-child(even) {
-    background-color: #f8f9fa;
-  }
-`;
-
-const TableCell = styled.td`
-  padding: 10px;
-  border: 1px solid #ddd;
-  text-align: left;
-`;
-
-const ActionButton = styled.button`
-  padding: 8px 12px;
-  margin: 0 5px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  color: white;
-  background-color: ${props => (props.variant === 'edit' ? '#007bff' : '#dc3545')};
-
-  &:hover {
-    background-color: ${props => (props.variant === 'edit' ? '#0056b3' : '#c82333')};
-  }
-`;
-
-const BackButton = styled.button`
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  padding: 8px 16px;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: #5a6268;
-  }
-`;
-
-const LoadingSpinner = styled.div`
-  text-align: center;
-  padding: 20px;
-  color: #007bff;
-  font-size: 18px;
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
-  padding: 20px;
-  color: #dc3545;
-  background-color: #ffe6e6;
+  background: #f8fafc;
   border-radius: 8px;
-  margin: 20px auto;
-  max-width: 800px;
+
+  input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    outline: none;
+    font-size: 0.95rem;
+
+    &:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    }
+
+    &::placeholder {
+      color: #94a3b8;
+    }
+  }
 `;
 
 const ManageReviews = () => {
@@ -99,28 +52,32 @@ const ManageReviews = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    const fetchReviews = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get('https://localhost:7125/api/Reviews');
-        setReviews(response.data);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to fetch reviews. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchReviews();
   }, []);
+
+  const fetchReviews = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('https://localhost:7125/api/Reviews');
+      setReviews(response.data);
+      setError('');
+    } catch (err) {
+      console.error(err);
+      setError('Failed to fetch reviews. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleEditReview = async (reviewId) => {
     const review = reviews.find(r => r.reviewID === reviewId);
     if (!review) {
-      alert('Review not found!');
+      setError('Review not found!');
       return;
     }
     
@@ -130,15 +87,13 @@ const ManageReviews = () => {
     if (updatedComment && updatedRating) {
       const ratingNum = parseInt(updatedRating, 10);
       if (ratingNum < 1 || ratingNum > 5) {
-        alert('Rating must be between 1 and 5');
+        setError('Rating must be between 1 and 5');
         return;
       }
 
       try {
-        await axios.put(`https://localhost:7125/api/Reviews/${reviewId}`, {
-          reviewID: review.reviewID,
-          userID: review.userID,
-          hotelID: review.hotelID,
+        await axios.patch(`https://localhost:7125/api/Reviews/${reviewId}`, {
+          ...review,
           comment: updatedComment,
           rating: ratingNum
         });
@@ -150,9 +105,10 @@ const ManageReviews = () => {
               : r
           )
         );
+        setSuccessMessage('Review updated successfully!');
       } catch (err) {
         console.error(err);
-        alert('Failed to update review. Please try again.');
+        setError('Failed to update review. Please try again.');
       }
     }
   };
@@ -164,70 +120,95 @@ const ManageReviews = () => {
         setReviews(prevReviews => 
           prevReviews.filter(review => review.reviewID !== reviewId)
         );
+        setSuccessMessage('Review deleted successfully!');
       } catch (err) {
         console.error(err);
-        alert('Failed to delete review. Please try again.');
+        setError('Failed to delete review. Please try again.');
       }
     }
   };
 
+  const filteredReviews = reviews.filter(review =>
+    review.comment.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    review.rating.toString().includes(searchTerm)
+  );
+
   if (loading) {
     return (
-      <Container>
-        <LoadingSpinner>
-          <div>Loading reviews...</div>
-        </LoadingSpinner>
-      </Container>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container>
-        <ErrorMessage>{error}</ErrorMessage>
-      </Container>
+      <PageContainer>
+        <LoadingSpinner>Loading reviews...</LoadingSpinner>
+      </PageContainer>
     );
   }
 
   return (
-    <Container>
-      <BackButton onClick={() => navigate('/admin-dashboard')}>
-        Back to Dashboard
-      </BackButton>
-      <Title>Manage Reviews</Title>
-      <Table>
-        <thead>
-          <tr>
-            <TableHeader>ID</TableHeader>
-            <TableHeader>User</TableHeader>
-            <TableHeader>Hotel</TableHeader>
-            <TableHeader>Rating</TableHeader>
-            <TableHeader>Comment</TableHeader>
-            <TableHeader>Actions</TableHeader>
-          </tr>
-        </thead>
-        <tbody>
-          {reviews.map(review => (
-            <TableRow key={review.reviewID}>
-              <TableCell>{review.reviewID}</TableCell>
-              <TableCell>{review.userID || 'N/A'}</TableCell>
-              <TableCell>{review.hotelID || 'N/A'}</TableCell>
-              <TableCell>{review.rating}</TableCell>
-              <TableCell>{review.comment}</TableCell>
-              <TableCell>
-                <ActionButton variant="edit" onClick={() => handleEditReview(review.reviewID)}>
-                  Edit
-                </ActionButton>
-                <ActionButton variant="delete" onClick={() => handleDeleteReview(review.reviewID)}>
-                  Delete
-                </ActionButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </tbody>
-      </Table>
-    </Container>
+    <PageContainer>
+      <HeaderSection>
+        <ButtonGroup>
+          <ActionButton onClick={() => navigate('/admin-dashboard')}>
+            <FiArrowLeft /> Back to Dashboard
+          </ActionButton>
+        </ButtonGroup>
+        <Title>Manage Reviews</Title>
+        <ButtonGroup>
+          {/* Placeholder for symmetry */}
+          <div style={{ width: '120px' }} />
+        </ButtonGroup>
+      </HeaderSection>
+
+      <ContentCard>
+        <SearchBar>
+          <input
+            type="text"
+            placeholder="Search reviews by comment or rating..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <ActionButton>
+            <FiSearch /> Search
+          </ActionButton>
+        </SearchBar>
+
+        {error && <Message $type="error">{error}</Message>}
+        {successMessage && <Message $type="success">{successMessage}</Message>}
+
+        <Table>
+          <thead>
+            <tr>
+              <Th>ID</Th>
+              <Th>User</Th>
+              <Th>Hotel</Th>
+              <Th>Rating</Th>
+              <Th>Comment</Th>
+              <Th>Actions</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredReviews.map(review => (
+              <Tr key={review.reviewID}>
+                <Td>{review.reviewID}</Td>
+                <Td>{review.userID || 'N/A'}</Td>
+                <Td>{review.hotelID || 'N/A'}</Td>
+                <Td>{review.rating}</Td>
+                <Td>{review.comment}</Td>
+                <Td>
+                  <ButtonGroup>
+                    <ActionButton onClick={() => handleEditReview(review.reviewID)}>
+                      <FiEdit2 /> Edit
+                    </ActionButton>
+                    <ActionButton $variant="danger" onClick={() => handleDeleteReview(review.reviewID)}>
+                      <FiTrash2 /> Delete
+                    </ActionButton>
+                  </ButtonGroup>
+                </Td>
+              </Tr>
+            ))}
+          </tbody>
+        </Table>
+      </ContentCard>
+    </PageContainer>
   );
 };
 
 export default ManageReviews;
+
