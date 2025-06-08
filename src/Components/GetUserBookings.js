@@ -116,7 +116,7 @@ const GetUserBookings = () => {
         throw new Error('User ID not found in token');
       }
 
-      const response = await axios.get(`http://localhost:5217/api/Bookings/User/${userId}`, {
+      const response = await axios.get(`https://localhost:7125/api/Bookings/User/${userId}`, {
         headers: {
           'Authorization': `Bearer ${tokenObj.token}`
         }

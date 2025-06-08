@@ -47,6 +47,7 @@ const SearchBar = styled.div`
   }
 `;
 
+
 const ManageHotels = () => {
   const navigate = useNavigate();
   const { hotels, loading, error, fetchHotels, updateHotel, deleteHotel } = useHotelManagement();

@@ -115,7 +115,7 @@ const GetAllUsers = () => {
         throw new Error('User ID not found in token');
       }
 
-      const response = await axios.get(`http://localhost:5217/api/Bookings/User`, {
+      const response = await axios.get(`https://localhost:7125/api/Bookings/User`, {
         headers: {
           'Authorization': `Bearer ${tokenObj.token}`
         }
@@ -139,7 +139,7 @@ const GetAllUsers = () => {
   const handleCancelBooking = async (bookingId) => {
     try {
       const tokenObj = JSON.parse(localStorage.getItem("token"));
-      await axios.put(`https://localhost:5217/api/Bookings/${bookingId}/cancel`, null, {
+      await axios.put(`https://localhost:7125/api/Bookings/${bookingId}/cancel`, null, {
         headers: {
           'Authorization': `Bearer ${tokenObj.token}`
         }
