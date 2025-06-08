@@ -174,7 +174,7 @@ const GetBookingByBookingId = () => {
     const handleStatusUpdate = async (newStatus) => {
         try {
             const tokenObj = localStorage.getItem('token');
-            await axios.put(`https://localhost:7125/api/Bookings/${bookingId}`, 
+            await axios.patch(`https://localhost:7125/api/Bookings/${bookingId}`, 
                 { status: newStatus },
                 { 
                     headers: {
