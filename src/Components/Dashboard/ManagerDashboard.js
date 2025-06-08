@@ -117,7 +117,7 @@ const ManagerDashboard = () => {
           bookings={bookings} 
           loading={loading} 
           onBookingClick={(id) => navigate(`/bookings/${id}`)}
-          onViewAllClick={() => navigate('/bookings')}
+          onViewAllClick={() => navigate(`/bookings/hotel/${hotelID}`)}
         />
         
         <QuickActions 

@@ -29,7 +29,7 @@ import ManagerAvailableRooms from './Components/ManagerAvailableRooms';
 import ViewGuests from './Components/ViewGuest';
 import GetBookingByUser from './Components/GetBookingbyUserId';
 import GetBookingByRoom from './Components/GetBookingbyRoomID';
-
+import GetBookingsByHotel from './Components/GetBookingsByHotel';
 import ManageReviews from './Components/Auth/ManageReviews';  // add manage reviews
 import About from './Components/About';
 import Contact from './Components/Contact';
@@ -75,7 +75,7 @@ function App() {
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/manage-hotels" element={<ManageHotels />} />
             <Route path="/manage-bookings" element={<ManageBookings />} />
-
+            <Route path="/bookings" element={<ViewAllBookings />} />
             <Route path="/manage-reviews" element={<ManageRevews />} />
            </Route>
 
@@ -89,8 +89,9 @@ function App() {
             <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
             <Route path="/hotel-rooms/:hotelID/update" element={<UpdateRoom />} />
             <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} />
-
-            <Route path="/bookings" element={<ViewAllBookings />} />
+            <Route path="/payment" element={<Payment />} />
+            <Route path='/payment-success' element={<PaymentSuccess />} />
+            <Route path="/bookings/hotel/:hotelID" element={<GetBookingsByHotel />} />
             <Route path="/available-rooms/:hotelID" element={<ManagerAvailableRooms />} />
             <Route path="/hotels/:hotelID/guests" element={<ViewGuests />} />
             <Route path="/bookings/user/:hotelID" element={<GetBookingByUser />} />
