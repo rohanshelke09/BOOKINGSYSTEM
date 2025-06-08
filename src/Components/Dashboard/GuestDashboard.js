@@ -273,8 +273,7 @@ const GuestDashboard = () => {
         name: updatedName,
         email: updatedEmail,
         contactNumber: updatedPhone || user.contactNumber,
-        password: user.password,
-        role: user.role
+
       };
 
       const response = await axios.patch(
