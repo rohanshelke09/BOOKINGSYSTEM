@@ -4,6 +4,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaPhone, FaIdCard, FaEdit } from 'react-icons/fa';
+import EditProfileModal from '../EditProfileModal';
 const ActionButton = styled.button`
   background-color: #007bff;
   color: white;
@@ -230,6 +231,7 @@ const GuestDashboard = () => {
   const [user, setUser] = useState(null);
   const [userLoading, setUserLoading] = useState(true);
   const navigate = useNavigate();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const RECENT_BOOKINGS_COUNT = 1;
   const fetchUserDetails = async (userID, token) => {
     try {
@@ -249,31 +251,16 @@ const GuestDashboard = () => {
       setUserLoading(false);
     }
   };
-  const handleEditProfile = async () => {
+  const handleEditProfile = async (updatedData) => {
     try {
-      const updatedName = prompt('Enter new name:', user?.name);
-      const updatedEmail = prompt('Enter new email:', user?.email);
-      const updatedPhone = prompt('Enter new phone number:', user?.contactNumber);
-
-      if (!updatedName || !updatedEmail) {
-        alert('Name and email are required');
-        return;
-      }
-
-      if (!updatedEmail.includes('@')) {
-        alert('Please enter a valid email address');
-        return;
-      }
-
       const token = localStorage.getItem('token');
       const tokenObj = token ? JSON.parse(token) : null;
 
       const updatedUser = {
         userID: user.userID,
-        name: updatedName,
-        email: updatedEmail,
-        contactNumber: updatedPhone || user.contactNumber,
-
+        name: updatedData.name,
+        email: updatedData.email,
+        contactNumber: updatedData.contactNumber
       };
 
       const response = await axios.patch(
@@ -289,6 +276,7 @@ const GuestDashboard = () => {
 
       if (response.data) {
         setUser(response.data);
+        setIsEditModalOpen(false);
         alert('Profile updated successfully!');
       }
     } catch (err) {
@@ -411,9 +399,9 @@ const GuestDashboard = () => {
                   <span>{user?.contactNumber || 'No phone number added'}</span>
                 </InfoItem>
               </ProfileInfo>
-              <EditButton onClick={handleEditProfile}>
-          <FaUser /> Edit Profile
-        </EditButton>
+              <EditButton onClick={() => setIsEditModalOpen(true)}>
+    <FaEdit /> Edit Profile
+  </EditButton>
             </ProfileCard>
           </>
         )}
@@ -469,6 +457,12 @@ const GuestDashboard = () => {
         </Card>
         
       </CardGrid>
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleEditProfile}
+        userData={user}
+      />
     </DashboardContainer>
   );
 };

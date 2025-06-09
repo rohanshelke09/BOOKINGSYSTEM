@@ -1,9 +1,9 @@
-import React, { useState, useEffect ,useCallback} from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios';
 import styled from 'styled-components';
-import { FaCreditCard, FaMoneyBillWave, FaMobile, FaLock,FaArrowLeft } from 'react-icons/fa';
+import { FaCreditCard, FaMoneyBillWave, FaMobile, FaLock } from 'react-icons/fa';
 
 const PaymentContainer = styled.div`
   max-width: 800px;
@@ -137,27 +137,6 @@ const ErrorMessage = styled.div`
   margin-top: 10px;
   font-size: 14px;
 `;
-const BackButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  background-color: #6c757d;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 14px;
-
-  &:hover {
-    background-color: #5a6268;
-  }
-
-  svg {
-    font-size: 16px;
-  }
-`;
 
 const Payment = () => {
   const navigate = useNavigate();
@@ -171,10 +150,6 @@ const Payment = () => {
     expiryDate: '',
     cvv: ''
   });
-
-  // Get booking details from location state
-  const { price ,bookingID,checkIn,checkOut} = location.state || {};
-
   const calculateTotalDays = (checkIn, checkOut) => {
     const startDate = new Date(checkIn);
     const endDate = new Date(checkOut);
@@ -182,9 +157,15 @@ const Payment = () => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
+  // Get booking details from location state
+  const { price ,bookingID, checkIn,checkOut} = location.state || {};
   const totalDays = calculateTotalDays(checkIn, checkOut);
   const totalAmount = price * totalDays;
-
+  useEffect(() => {
+    console.log('Price:', price);
+    console.log('Total Days:', totalDays);
+    console.log('Total Amount:', totalAmount);
+  }, [price, totalDays, totalAmount]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -223,14 +204,14 @@ const Payment = () => {
       if (response.status === 201) {
         // Payment successful
         navigate('/payment-success', { 
-            state: { 
-                paymentDetails: {
-                  ...response.data,
-                  amount: totalAmount,
-                  paymentMethod
-                },
-                bookingID
-              }
+          state: { 
+            paymentDetails: {
+              ...response.data,
+              amount: totalAmount, // Use calculated total amount
+              paymentMethod
+            },
+            bookingID
+          }
         });
       }
     } catch (err) {
@@ -240,60 +221,12 @@ const Payment = () => {
       setLoading(false);
     }
   };
-  const cancelBooking = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const tokenObj = token ? JSON.parse(token) : null;
 
-      if (!tokenObj?.token) {
-        throw new Error('Authentication required');
-      }
-
-      await axios.delete(
-        `https://localhost:7125/api/Bookings/${bookingID}/`,
-
-        {
-          headers: {
-            'Authorization': `Bearer ${tokenObj.token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-    } catch (err) {
-      console.error('Error :', err);
-    }
-  }, [bookingID]);
- // Add useEffect for handling page unload
- useEffect(() => {
-  const handleBeforeUnload = (event) => {
-    event.preventDefault();
-    cancelBooking();
-    return (event.returnValue = '');
-  };
-
-  window.addEventListener('beforeunload', handleBeforeUnload);
-
-  return () => {
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-  };
-}, [cancelBooking]);
-
-// Add back button handler
-const handleBack = async () => {
-  await cancelBooking();
-  navigate(-1);
-};
   return (
     <PaymentContainer>
       <PaymentCard>
         <PaymentHeader>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <BackButton onClick={handleBack}>
-              <FaArrowLeft /> Back
-            </BackButton>
-            <h2>Complete Your Payment</h2>
-            <div style={{ width: '80px' }}></div> {/* Spacer for alignment */}
-          </div>
+          <h2>Complete Your Payment</h2>
           <p>Choose your preferred payment method</p>
         </PaymentHeader>
 

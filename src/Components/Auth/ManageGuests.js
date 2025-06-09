@@ -117,7 +117,7 @@ const ManageGuests = () => {
 
 
       const response = await axios.patch(
-        `https://localhost:7125/api/User/${guest.userID}`,
+        `https://localhost:7125/api/User/${guests.userID}`,
         updatedGuest
 
 

@@ -23,18 +23,22 @@ import GetRoomsByHotel from './Components/GetRoomsByHotel';
 import ManageHotels from './Components/Auth/ManageHotels';
 import ManageBookings from './Components/Auth/ManageBookings';
 import UpdateRoom from './Components/UpdateRoom';
-
+import ScrollToTop from './Components/ScrollToTop';
 import ViewAllBookings from './Components/ViewAllBookings';
 import ManagerAvailableRooms from './Components/ManagerAvailableRooms';
 import ViewGuests from './Components/ViewGuest';
 import GetBookingByUser from './Components/GetBookingbyUserId';
 import GetBookingByRoom from './Components/GetBookingbyRoomID';
 import GetBookingsByHotel from './Components/GetBookingsByHotel';
-import ManageReviews from './Components/Auth/ManageReviews';  // add manage reviews
+import ManageManagers from './Components/Auth/ManageManagers';  // add manage reviews
 import About from './Components/About';
 import Contact from './Components/Contact';
-
+import NotFound from './Components/NotFound';
+import Payment from './Components/Payment';
+import PaymentSuccess from './Components/PaymentSuccess';
+import GetUsersAllBookings from './Components/GetUsersAllBookings';
 import ManageRevews from './Components/Auth/ManageReviews';
+import ManageGuests from './Components/Auth/ManageGuests';
 
 
 
@@ -82,6 +86,8 @@ function App() {
             <Route path="/manage-bookings" element={<ManageBookings />} />
             <Route path="/bookings" element={<ViewAllBookings />} />
             <Route path="/manage-reviews" element={<ManageRevews />} />
+            <Route path="/manage-guests" element={<ManageGuests />} />
+            <Route path="/manage-managers" element={<ManageManagers />} />
             
            </Route>
 
