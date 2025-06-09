@@ -7,14 +7,14 @@ const UseHotelDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [hotelID, setHotelID] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     totalBookings: 0,
     occupancyRate: 0,
     revenue: 0,
     availableRooms: 0
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const calculateOccupancyRate = (bookings,rooms) => {
     if (!Array.isArray(bookings) || bookings.length === 0) return 0;
@@ -38,6 +38,18 @@ const UseHotelDashboard = () => {
     });
     return availableRooms.length;
   };
+
+  const calculateRevenue = (bookings) => {
+    if (!Array.isArray(bookings)) return 0;
+    const revenue = bookings.reduce((total, booking) => {
+      if (booking.status === 'confirmed') {
+        return total + (booking.amount || 0);
+      }
+      return total;
+    }, 0);
+    return revenue;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -45,82 +57,73 @@ const UseHotelDashboard = () => {
         const tokenObj = token ? JSON.parse(token) : null;
         
         if (!tokenObj?.token) {
-          throw new Error('Authentication required');
+          throw new Error('Authentication token not found');
         }
 
         const decodedToken = jwtDecode(tokenObj.token);
         const managerId = decodedToken.nameid?.[0];
- // Log managerId
- console.log('Manager ID from token:', managerId);
 
         if (!managerId) {
-          throw new Error('Manager ID not found');
+          throw new Error('Manager ID not found in token');
         }
 
-        // Get hotel details
+        // Changed endpoint to match backend
         const hotelResponse = await axios.get(
           `https://localhost:7125/api/Hotels/by-manager/${managerId}`,
           {
             headers: {
-              Authorization: `Bearer ${tokenObj.token}`,
-              'Content-Type': 'application/json'
+              Authorization: `Bearer ${tokenObj.token}`
             }
           }
         );
 
-        
- if (!hotelResponse.data?.hotelID) {
-   throw new Error('No hotel ID found in response');
- }
+        if (!hotelResponse.data) {
+          throw new Error('No hotel assigned to this manager');
+        }
 
-        setHotelDetails(hotelResponse.data);
-        setHotelID(hotelResponse.data.hotelID);
-       
- // Log hotelID after setting
- console.log('Set hotelID to:', hotelResponse.data.hotelID);
         const currentHotelId = hotelResponse.data.hotelID;
+        setHotelDetails(hotelResponse.data);
         setHotelID(currentHotelId);
 
+        // Fetch bookings and rooms only if we have a hotel
         if (currentHotelId) {
-          // Get bookings
-          const bookingsResponse = await axios.get(
-            `https://localhost:7125/api/Bookings/Hotel/${currentHotelId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${tokenObj.token}`,
-                'Content-Type': 'application/json'
-              }
-            }
-          );
+          const [bookingsResponse, roomsResponse] = await Promise.all([
+            axios.get(`https://localhost:7125/api/Bookings/hotel/${currentHotelId}`, {
+              headers: { Authorization: `Bearer ${tokenObj.token}` }
+            }),
+            axios.get(`https://localhost:7125/api/Rooms/hotel/${currentHotelId}`, {
+              headers: { Authorization: `Bearer ${tokenObj.token}` }
+            })
+          ]);
 
-          // Get rooms
-          const roomsResponse = await axios.get(
-            `https://localhost:7125/api/Rooms/${currentHotelId}/rooms`,
-            {
-              headers: {
-                Authorization: `Bearer ${tokenObj.token}`,
-                'Content-Type': 'application/json'
-              }
-            }
-          );
-
-          const bookingsData = bookingsResponse.data;
-          const roomsData = roomsResponse.data;
+          setBookings(bookingsResponse.data || []);
+          setRooms(roomsResponse.data || []);
           
-          setBookings(bookingsData);
-          setRooms(roomsData);
-
-          // Update stats with actual available rooms
+          // Update stats only if we have valid data
           setStats({
+
             totalBookings: bookingsData?.length || 0,
             occupancyRate: calculateOccupancyRate(bookingsData, roomsData),
             revenue: 0,
             availableRooms: calculateAvailableRooms(roomsData)
+
           });
         }
+
+        setError(null);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        setError(error.response?.data?.message || 'Failed to load dashboard data. Manager is not assigned to any hotel. Kindly contact the site administrator.');
+        
+        let errorMessage = 'Failed to load dashboard data. ';
+        if (error.response?.status === 404) {
+          errorMessage += 'Manager is not assigned to any hotel. Please contact the administrator.';
+        } else {
+          errorMessage += error.message || 'Please try again later.';
+        }
+        
+        setError(errorMessage);
+        setHotelID(null);
+        setHotelDetails(null);
       } finally {
         setLoading(false);
       }

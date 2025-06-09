@@ -188,6 +188,7 @@ const AdminDashboard = () => {
         { label: 'Guests', count: guests.length },
         { label: 'Managers', count: managers.length }
       ],
+      count:guests.length+managers.length,
       color: 'blue',
       bgColor: '#ebf5ff',
       actions: [
@@ -205,8 +206,8 @@ const AdminDashboard = () => {
     {
       title: 'Total Bookings',
       count: bookings.length,
-      color: 'yellow',
-      bgColor: '#fffff0',
+      color: 'blue',
+      bgColor: '#ebf5ff',
       path: '/manage-bookings'
     },
     {
