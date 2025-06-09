@@ -16,14 +16,14 @@ const UseHotelDashboard = () => {
     availableRooms: 0
   });
 
-  const calculateOccupancyRate = (bookings) => {
+  const calculateOccupancyRate = (bookings,rooms) => {
     if (!Array.isArray(bookings) || bookings.length === 0) return 0;
     
-    const confirmedBookings = bookings.filter(booking => booking.status === 'confirmed');
-    const rate = (confirmedBookings.length / bookings.length) * 100;
+    const confirmedBookings = bookings.filter(booking => booking.status === 'confirmed'||'Confirmed');
+    const rate = (confirmedBookings.length / rooms.length) * 100;
     console.log('Occupancy calculation:', {
       confirmed: confirmedBookings.length,
-      total: bookings.length,
+      total: rooms.length,
       rate: rate
     });
     return parseFloat(rate.toFixed(1));
@@ -101,10 +101,12 @@ const UseHotelDashboard = () => {
           
           // Update stats only if we have valid data
           setStats({
-            totalBookings: bookingsResponse.data?.length || 0,
-            occupancyRate: calculateOccupancyRate(bookingsResponse.data),
-            revenue: calculateRevenue(bookingsResponse.data),
-            availableRooms: calculateAvailableRooms(roomsResponse.data)
+
+            totalBookings: bookingsData?.length || 0,
+            occupancyRate: calculateOccupancyRate(bookingsData, roomsData),
+            revenue: 0,
+            availableRooms: calculateAvailableRooms(roomsData)
+
           });
         }
 

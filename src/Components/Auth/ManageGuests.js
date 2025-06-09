@@ -231,15 +231,14 @@ const ManageGuests = () => {
         role: "guest"
       };
 
+
+
       const response = await axios.patch(
-        `https://localhost:7125/api/User/${editingGuest.userID}`,
-        updateData,
-        {
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }
+        `https://localhost:7125/api/User/${guests.userID}`,
+        updatedGuest
+
+
+
       );
 
       if (response.status === 200 || response.status === 204) {

@@ -82,6 +82,8 @@ const Booking = ({ roomID, price, checkIn, checkOut, onBookingComplete }) => {
         state: {
           price: price,
           bookingID: response.data.bookingID,
+          checkIn: checkIn,
+          checkOut: checkOut
         }
       });
     } catch (error) {
