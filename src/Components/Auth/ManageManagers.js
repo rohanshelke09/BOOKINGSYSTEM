@@ -51,6 +51,52 @@ export const SearchBar = styled.div`
   }
 `;
 
+const ConfirmationModal = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  z-index: 1001;
+  text-align: center;
+
+  h3 {
+    color: #1f2937;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #4b5563;
+    margin-bottom: 1.5rem;
+  }
+`;
+
+const ModalButtons = styled(ButtonGroup)`
+  justify-content: center;
+  gap: 1rem;
+
+  button {
+    min-width: 100px;
+  }
+`;
+
+const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+`;
+
 const ManageManagers = () => {
   const navigate = useNavigate();
   const [managers, setManagers] = useState([]);
@@ -59,6 +105,7 @@ const ManageManagers = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [isAddingManager, setIsAddingManager] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [deletingManager, setDeletingManager] = useState(null);
 
   useEffect(() => {
     fetchManagers();
@@ -96,32 +143,56 @@ const ManageManagers = () => {
     }
   };
 
-  const handleDeleteClick = async (userID) => {
-    if (!window.confirm('Are you sure you want to delete this manager? This action cannot be undone.')) {
-      return;
-    }
+  const handleDeleteClick = (manager) => {
+    setDeletingManager(manager);
+  };
 
+  const confirmDelete = async () => {
     try {
-      const response = await axios.delete(
-        `https://localhost:7125/api/User/${userID}`,
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      // Set loading state
+      setLoading(true);
+      setError(null);
 
-      if (response.status === 204 || response.status === 200) {
-        setSuccessMessage('Manager deleted successfully!');
-        setManagers(prevManagers => prevManagers.filter(manager => manager.userID !== userID));
-      }
+      // Make the DELETE request
+      await axios.delete(`https://localhost:7125/api/User/${deletingManager.userID}`);
+
+      // Update the local state
+      setManagers(prevManagers => 
+        prevManagers.filter(manager => manager.userID !== deletingManager.userID)
+      );
+      
+      // Show success message
+      setSuccessMessage(`Manager ${deletingManager.name} was successfully deleted`);
+      
+      // Clear the deleting state
+      setDeletingManager(null);
+
     } catch (err) {
-      console.error('Delete error:', err);
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data || 
-                          'Failed to delete manager. Please try again.';
-      window.alert(errorMessage);
-      setError(errorMessage);
+      // Handle specific error cases
+      if (err.response) {
+        switch (err.response.status) {
+          case 404:
+            setError(`Manager with ID ${deletingManager.userID} not found`);
+            // Remove from local state if not found on server
+            setManagers(prevManagers => 
+              prevManagers.filter(manager => manager.userID !== deletingManager.userID)
+            );
+            break;
+          case 403:
+            setError('You do not have permission to delete this manager');
+            break;
+          default:
+            setError(err.response.data?.message || 'Failed to delete manager. Please try again.');
+        }
+      } else {
+        setError('Network error occurred. Please check your connection and try again.');
+      }
+    } finally {
+      setLoading(false);
+      // Clear deleting state after a short delay to allow animation
+      setTimeout(() => {
+        setDeletingManager(null);
+      }, 500);
     }
   };
 
@@ -135,7 +206,7 @@ const ManageManagers = () => {
         </ButtonGroup>
         <Title>Manage Managers</Title>
         <ButtonGroup>
-          <ActionButton $variant="primary" onClick={() => setIsAddingManager(true)}>
+          <ActionButton $primary onClick={() => setIsAddingManager(true)}>
             <FiUserPlus /> Add Manager
           </ActionButton>
         </ButtonGroup>
@@ -167,7 +238,7 @@ const ManageManagers = () => {
                   <Td>{manager.email}</Td>
                   <Td>{manager.contactNumber}</Td>
                   <Td>
-                    <ActionButton $variant="danger" onClick={() => handleDeleteClick(manager.userID)}>
+                    <ActionButton $variant="danger" onClick={() => handleDeleteClick(manager)}>
                       <FiTrash2 /> Delete
                     </ActionButton>
                   </Td>
@@ -185,6 +256,34 @@ const ManageManagers = () => {
           onSave={handleAddManager}
           onCancel={() => setIsAddingManager(false)}
         />
+      )}
+
+      {deletingManager && (
+        <>
+          <Overlay onClick={() => !loading && setDeletingManager(null)} />
+          <ConfirmationModal>
+            <h3>Delete Manager</h3>
+            <p>
+              Are you sure you want to delete manager {deletingManager.name}? 
+              This action cannot be undone.
+            </p>
+            <ModalButtons>
+              <ActionButton 
+                onClick={() => setDeletingManager(null)} 
+                disabled={loading}
+              >
+                Cancel
+              </ActionButton>
+              <ActionButton 
+                $variant="danger" 
+                onClick={confirmDelete}
+                disabled={loading}
+              >
+                {loading ? 'Deleting...' : 'Delete'}
+              </ActionButton>
+            </ModalButtons>
+          </ConfirmationModal>
+        </>
       )}
     </PageContainer>
   );

@@ -17,7 +17,6 @@ import {
   LoadingSpinner,
   Message
 } from '../Styles/ManagePageStyles';
-import EditGuestModal from '../EditGuestModal';
 
 const SearchBar = styled.div`
   display: flex;
@@ -47,6 +46,113 @@ const SearchBar = styled.div`
   }
 `;
 
+const EditModal = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  z-index: 1001;
+`;
+
+const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+`;
+
+const EditForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const EditFormGroup = styled.div`
+  label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+
+    &:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+      outline: none;
+    }
+  }
+`;
+
+const ConfirmationModal = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  z-index: 1001;
+`;
+
+const ModalButtons = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+`;
+
+const ConfirmationModalButtons = styled(ModalButtons)`
+  margin-top: 2rem;
+  justify-content: center;
+  gap: 1rem;
+
+  button {
+    min-width: 120px;
+
+    &:first-child {
+      background-color: #4f46e5;
+      color: white;
+      
+      &:hover {
+        background-color: #4338ca;
+      }
+    }
+
+    &:last-child {
+      background-color: #ef4444;
+      color: white;
+      
+      &:hover {
+        background-color: #dc2626;
+      }
+    }
+
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+`;
+
 const ManageGuests = () => {
   const navigate = useNavigate();
   const [guests, setGuests] = useState([]);
@@ -55,6 +161,8 @@ const ManageGuests = () => {
   const [editingGuest, setEditingGuest] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [deletingGuest, setDeletingGuest] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchGuests();
@@ -88,89 +196,159 @@ const ManageGuests = () => {
     setSuccessMessage('');
   };
 
-  const handleSaveEdit = async (updatedGuest) => {
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+
     try {
-      if (!updatedGuest.name || !updatedGuest.email || !updatedGuest.contactNumber) {
-        window.alert('All fields are required');
+      // Input validation
+      if (!editingGuest.name?.trim() || !editingGuest.email?.trim() || !editingGuest.contactNumber?.trim()) {
+        setError('All fields are required');
+        setIsSubmitting(false);
         return;
       }
 
       const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-      if (!emailRegex.test(updatedGuest.email)) {
-        window.alert('Invalid email format. Example: xyz@mail.com');
+      if (!emailRegex.test(editingGuest.email)) {
+        setError('Invalid email format');
+        setIsSubmitting(false);
         return;
       }
 
       const contactRegex = /^[0-9]{10}$/;
-      if (!contactRegex.test(updatedGuest.contactNumber)) {
-        window.alert('Contact number must be exactly 10 digits');
+      if (!contactRegex.test(editingGuest.contactNumber)) {
+        setError('Contact number must be 10 digits');
+        setIsSubmitting(false);
         return;
       }
 
       const updateData = {
-        name: updatedGuest.name.trim(),
-        email: updatedGuest.email.trim(),
-        contactNumber: updatedGuest.contactNumber,
-        role: "guest",
-        password: ""
+        userID: editingGuest.userID,
+        name: editingGuest.name.trim(),
+        email: editingGuest.email.trim(),
+        contactNumber: editingGuest.contactNumber.trim(),
+        role: "guest"
       };
 
-      console.log('Sending update request:', updateData);
-
-      const response = await axios.put(
-        `https://localhost:7125/api/User/${updatedGuest.userID}`,
+      const response = await axios.patch(
+        `https://localhost:7125/api/User/${editingGuest.userID}`,
         updateData,
         {
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
           }
         }
       );
 
-      if (response.status === 204) {
-        setSuccessMessage('Guest updated successfully!');
+      if (response.status === 200 || response.status === 204) {
+        // Update local state
+        setGuests(prevGuests =>
+          prevGuests.map(g =>
+            g.userID === editingGuest.userID
+              ? { ...g, ...updateData }
+              : g
+          )
+        );
+        setSuccessMessage(`Guest "${updateData.name}" updated successfully`);
         setEditingGuest(null);
-        await fetchGuests();
       }
     } catch (err) {
       console.error('Update error:', err);
-      let errorMessage = 'Failed to update guest. Please try again.';
-      
-      if (err.response?.data) {
-        if (typeof err.response.data === 'object') {
-          const errors = Object.values(err.response.data);
-          errorMessage = Array.isArray(errors) ? errors.join('\n') : err.response.data.message;
-        } else {
-          errorMessage = err.response.data;
-        }
+      if (err.response?.status === 404) {
+        setError('Guest not found. They may have been deleted.');
+      } else if (err.response?.status === 400) {
+        setError(err.response.data.message || 'Invalid data provided');
+      } else if (err.response?.status === 409) {
+        setError('Email address is already in use');
+      } else {
+        setError('Failed to update guest. Please try again.');
       }
-      
-      window.alert(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDeleteClick = async (userID) => {
-    try {
-      if (window.confirm("Are you sure you want to delete this guest? This action cannot be undone.")) {
-        const response = await axios.delete(
-          `https://localhost:7125/api/User/${userID}`,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+  const handleDeleteClick = (guest) => {
+    setDeletingGuest(guest);
+    setError('');
+    setSuccessMessage('');
+  };
 
-        if (response.status === 204) {
-          setSuccessMessage('Guest deleted successfully!');
-          await fetchGuests();
+  const confirmDelete = async () => {
+    try {
+      setIsSubmitting(true);
+      setError('');
+
+      // First check if guest has any active bookings
+      try {
+        const checkResponse = await axios.get(
+          `https://localhost:7125/api/User/${deletingGuest.userID}`
+        );
+        
+        if (checkResponse.data.hasActiveBookings) {
+          setError('Cannot delete guest with active bookings');
+          return;
+        }
+      } catch (checkErr) {
+        if (checkErr.response?.status !== 404) {
+          setError('Failed to verify guest status');
+          return;
         }
       }
+
+      const response = await axios.delete(
+        `https://localhost:7125/api/User/${deletingGuest.userID}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.status === 200 || response.status === 204) {
+        setGuests(prevGuests => 
+          prevGuests.filter(g => g.userID !== deletingGuest.userID)
+        );
+        setSuccessMessage(`Guest "${deletingGuest.name}" was successfully deleted`);
+        
+        // Close modal after short delay to show success message
+        setTimeout(() => {
+          setDeletingGuest(null);
+        }, 1500);
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 
-                         'Failed to delete guest. Please try again.';
-      window.alert(errorMessage);
+      console.error('Delete error:', err);
+      if (err.response) {
+        switch (err.response.status) {
+          case 404:
+            setError('Guest not found. They may have been already deleted.');
+            // Remove from local state if not found
+            setGuests(prevGuests => 
+              prevGuests.filter(g => g.userID !== deletingGuest.userID)
+            );
+            break;
+          case 400:
+            setError('Cannot delete guest. Please check if they have any active bookings.');
+            break;
+          case 409:
+            setError('Cannot delete guest with active bookings or payments.');
+            break;
+          case 403:
+            setError('You do not have permission to delete this guest.');
+            break;
+          default:
+            setError('Failed to delete guest. Please try again.');
+        }
+      } else if (err.request) {
+        setError('Network error. Please check your connection.');
+      } else {
+        setError('An unexpected error occurred.');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -226,7 +404,7 @@ const ManageGuests = () => {
                     <ActionButton onClick={() => handleEditClick(guest)}>
                       <FiEdit2 /> Edit
                     </ActionButton>
-                    <ActionButton $variant="danger" onClick={() => handleDeleteClick(guest.userID)}>
+                    <ActionButton $variant="danger" onClick={() => handleDeleteClick(guest)}>
                       <FiTrash2 /> Delete
                     </ActionButton>
                   </ButtonGroup>
@@ -238,14 +416,98 @@ const ManageGuests = () => {
       </ContentCard>
 
       {editingGuest && (
-        <EditGuestModal
-          guest={editingGuest}
-          onSave={handleSaveEdit}
-          onCancel={() => {
-            setEditingGuest(null);
-            setSuccessMessage('');
-          }}
-        />
+        <>
+          <Overlay onClick={() => !isSubmitting && setEditingGuest(null)} />
+          <EditModal>
+            <h2>Edit Guest</h2>
+            {error && <Message $type="error">{error}</Message>}
+            <EditForm onSubmit={handleSaveEdit}>
+              <EditFormGroup>
+                <label>Name</label>
+                <input
+                  type="text"
+                  value={editingGuest.name || ''}
+                  onChange={e => setEditingGuest(prev => ({
+                    ...prev,
+                    name: e.target.value
+                  }))}
+                  required
+                />
+              </EditFormGroup>
+              <EditFormGroup>
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={editingGuest.email || ''}
+                  onChange={e => setEditingGuest(prev => ({
+                    ...prev,
+                    email: e.target.value
+                  }))}
+                  required
+                />
+              </EditFormGroup>
+              <EditFormGroup>
+                <label>Contact Number</label>
+                <input
+                  type="text"
+                  value={editingGuest.contactNumber || ''}
+                  onChange={e => setEditingGuest(prev => ({
+                    ...prev,
+                    contactNumber: e.target.value
+                  }))}
+                  required
+                />
+              </EditFormGroup>
+              <ModalButtons>
+                <ActionButton
+                  type="button"
+                  onClick={() => setEditingGuest(null)}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </ActionButton>
+                <ActionButton
+                  type="submit"
+                  $variant="primary"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Changes'}
+                </ActionButton>
+              </ModalButtons>
+            </EditForm>
+          </EditModal>
+        </>
+      )}
+
+      {deletingGuest && (
+        <>
+          <Overlay onClick={() => !isSubmitting && setDeletingGuest(null)} />
+          <ConfirmationModal>
+            <h3>Delete Guest</h3>
+            <p>
+              Are you sure you want to delete {deletingGuest.name}? 
+              This action cannot be undone.
+            </p>
+            {error && <Message $type="error">{error}</Message>}
+            <ModalButtons>
+              <ActionButton
+                type="button"
+                onClick={() => setDeletingGuest(null)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </ActionButton>
+              <ActionButton
+                type="button"
+                $variant="danger"
+                onClick={confirmDelete}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Deleting...' : 'Delete'}
+              </ActionButton>
+            </ModalButtons>
+          </ConfirmationModal>
+        </>
       )}
     </PageContainer>
   );
