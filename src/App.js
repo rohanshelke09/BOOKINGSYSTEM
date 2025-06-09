@@ -95,7 +95,7 @@ function App() {
 
             {/* Manager Routes */}
             <Route element={<ProtectedRoute allowedRoles={["manager"]} />}>
-              {/* <Route path="/manager-dashboard" element={<ManagerDashboard/>} />
+            {/* <Route path="/manager-dashboard" element={<ManagerDashboard/>} />
             <Route path="/hotel-rooms/:hotelID" element={<GetRoomsByHotel />} />
             <Route path="/bookings/:bookingId" element={<GetBookingByBookingId />} />
             <Route path="/hotel-rooms/:hotelID/manage" element={<RoomManagement />} />

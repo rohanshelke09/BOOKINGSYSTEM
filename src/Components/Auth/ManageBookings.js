@@ -229,14 +229,29 @@ const ConfirmationModalButtons = styled(ButtonGroup)`
 `;
 
 const Message = styled.div`
-  padding: 1rem;
-  margin-bottom: 1.5rem;
+  padding: 1rem 1.5rem;
+  margin: 1rem 0;
   border-radius: 0.5rem;
   font-weight: 500;
   text-align: center;
+  font-size: 1rem;
+  line-height: 1.5;
   background-color: ${props => props.$type === 'error' ? '#fee2e2' : '#dcfce7'};
   color: ${props => props.$type === 'error' ? '#dc2626' : '#16a34a'};
   border: 1px solid ${props => props.$type === 'error' ? '#fecaca' : '#bbf7d0'};
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  animation: slideIn 0.3s ease-out;
+  @keyframes slideIn {
+    from {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
 `;
 
 const ConfirmationModal = styled.div`
@@ -263,6 +278,12 @@ const ConfirmationModal = styled.div`
   p {
     color: #4b5563;
     margin-bottom: 1.5rem;
+  }
+
+  .warning-text {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
   }
 `;
 
@@ -381,32 +402,67 @@ const ManageBookings = () => {
     try {
       setLoading(true);
       setError(null);
+      setSuccessMessage('');
 
-      const response = await axios.delete(
+      // Check if booking exists and has payment status
+      const bookingCheck = await axios.get(
         `https://localhost:7125/api/Bookings/${deletingBooking.bookingID}`
       );
 
+      if (bookingCheck.data.paymentStatus === 'Paid') {
+        setError(`Cannot delete booking #${deletingBooking.bookingID} as payment has been processed.`);
+        return;
+      }
+
+      const response = await axios.delete(
+        `https://localhost:7125/api/Bookings/${deletingBooking.bookingID}`,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
       if (response.status === 200 || response.status === 204) {
+        // Remove booking from UI
         setBookings(prevBookings => 
           prevBookings.filter(booking => booking.bookingID !== deletingBooking.bookingID)
         );
         setSuccessMessage(`Booking #${deletingBooking.bookingID} was successfully deleted`);
+        
+        // Close modal after successful deletion
+        setTimeout(() => {
+          setDeletingBooking(null);
+        }, 1500); // Give user time to see success message
       }
     } catch (err) {
-      if (err.response?.status === 409) {
-        setError('This booking cannot be deleted because it has related records.');
-      } else if (err.response?.status === 404) {
-        setError('Booking not found. It may have been already deleted.');
-        setBookings(prevBookings => 
-          prevBookings.filter(booking => booking.bookingID !== deletingBooking.bookingID)
-        );
-      } else {
-        setError('Failed to delete booking. Please try again.');
-      }
       console.error('Delete error:', err);
+      
+      if (err.response) {
+        switch (err.response.status) {
+          case 500:
+            setError('Server error: The booking could not be deleted at this time. Please try again later.');
+            setTimeout(() => setError(''), 5000); // Clear error after 5 seconds
+            break;
+          case 400:
+            setError('This booking cannot be deleted as it has associated records.');
+            break;
+          case 404:
+            setError('Booking not found.');
+            setBookings(prevBookings => 
+              prevBookings.filter(booking => booking.bookingID !== deletingBooking.bookingID)
+            );
+            break;
+          default:
+            setError('An error occurred while deleting the booking. Please try again.');
+        }
+      } else if (err.request) {
+        setError('Network error. Please check your connection.');
+      } else {
+        setError('An unexpected error occurred.');
+      }
     } finally {
       setLoading(false);
-      setTimeout(() => setDeletingBooking(null), 500);
     }
   };
 
