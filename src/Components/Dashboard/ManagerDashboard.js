@@ -119,12 +119,7 @@ console.log(stats);
       value: `${stats.occupancyRate}%`,
       color: "#00b894"
     },
-    {
-      icon: FaDollarSign,
-      label: "Total Revenue",
-      value: `${stats.revenue.toLocaleString()}`,
-      color: "#00cec9"
-    },
+   
     {
       icon: FaBed,
       label: "Available Rooms",
