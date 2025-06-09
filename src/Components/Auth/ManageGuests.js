@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiTrash2, FiEdit2, FiSearch } from 'react-icons/fi';
 import axios from 'axios';
 import styled from 'styled-components';
+
 import {
   PageContainer,
   HeaderSection,
@@ -235,7 +236,7 @@ const ManageGuests = () => {
 
       const response = await axios.patch(
         `https://localhost:7125/api/User/${guests.userID}`,
-        updatedGuest
+        updateData
 
 
 
