@@ -366,7 +366,7 @@ const GuestDashboard = () => {
   return (
     <DashboardContainer>
        <WelcomeSection>
-      <h1>Welcome {user?.name ? `, ${user.name}` : 'to Your Dashboard'}</h1>
+      <h1>Welcome {user?.name ? `, ${user.name.trim()}` : 'to Your Dashboard'}</h1>
       <p>Manage your bookings and explore our premium hotel services</p>
     </WelcomeSection>
 
