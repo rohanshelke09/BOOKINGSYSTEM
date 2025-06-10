@@ -12,7 +12,7 @@ const UseHotelDashboard = () => {
   const [stats, setStats] = useState({
     totalBookings: 0,
     occupancyRate: 0,
-    revenue: 0,
+
     availableRooms: 0
   });
 
@@ -39,16 +39,6 @@ const UseHotelDashboard = () => {
     return availableRooms.length;
   };
 
-  const calculateRevenue = (bookings) => {
-    if (!Array.isArray(bookings)) return 0;
-    const revenue = bookings.reduce((total, booking) => {
-      if (booking.status === 'confirmed') {
-        return total + (booking.amount || 0);
-      }
-      return total;
-    }, 0);
-    return revenue;
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,7 +95,7 @@ const UseHotelDashboard = () => {
 
             totalBookings: bookingsResponse.data.length || 0,
             occupancyRate: calculateOccupancyRate(bookingsResponse.data, roomsResponse.data),
-            revenue: 0,
+     
             availableRooms: calculateAvailableRooms(roomsResponse.data)
 
           });

@@ -119,7 +119,7 @@ console.log(stats);
       value: `${stats.occupancyRate}%`,
       color: "#00b894"
     },
-   
+
     {
       icon: FaBed,
       label: "Available Rooms",
