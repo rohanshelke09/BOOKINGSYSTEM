@@ -125,7 +125,7 @@ const Footer = () => {
       </FooterContent>
 
       <Copyright>
-        <p>&copy; {new Date().getFullYear()} Smart Hotel. All rights reserved.</p>
+        <p>&copy;2025 Smart Hotel. All rights reserved.</p>
       </Copyright>
     </FooterContainer>
   );

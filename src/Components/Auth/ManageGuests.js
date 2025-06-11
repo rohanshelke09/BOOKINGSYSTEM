@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiTrash2, FiEdit2, FiSearch } from 'react-icons/fi';
 import axios from 'axios';
 import styled from 'styled-components';
+import { getToken } from '../../Services/AuthService';
 import {
   PageContainer,
   HeaderSection,
@@ -171,11 +172,22 @@ const ManageGuests = () => {
   const fetchGuests = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('https://localhost:7125/api/User/by-role/guest', {
-        headers: {
-          'Content-Type': 'application/json'
+      const token = getToken();
+      if (!token) {
+        setError('Your session has expired. Please log in again.');
+        navigate('/login');
+        return;
+      }
+
+      const response = await axios.get(
+        'https://localhost:7125/api/User/by-role/guest',
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }
-      });
+      );
       
       if (response.data) {
         setGuests(response.data);
@@ -184,7 +196,7 @@ const ManageGuests = () => {
     } catch (err) {
       console.error('Fetch error:', err);
       const errorMessage = err.response?.data?.message || 
-                           'Failed to fetch guests. Please try again later.';
+                          'Failed to fetch guests. Please try again later.';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -278,31 +290,22 @@ const ManageGuests = () => {
 
   const confirmDelete = async () => {
     try {
-      setIsSubmitting(true);
-      setError('');
+      setLoading(true);
+      setError(null);
+      setSuccessMessage('');
 
-      // First check if guest has any active bookings
-      try {
-        const checkResponse = await axios.get(
-          `https://localhost:7125/api/User/${deletingGuest.userID}`
-        );
-        
-        if (checkResponse.data.hasActiveBookings) {
-          setError('Cannot delete guest with active bookings');
-          return;
-        }
-      } catch (checkErr) {
-        if (checkErr.response?.status !== 404) {
-          setError('Failed to verify guest status');
-          return;
-        }
+      const token = getToken();
+      if (!token) {
+        setError('Your session has expired. Please log in again.');
+        navigate('/login');
+        return;
       }
 
       const response = await axios.delete(
         `https://localhost:7125/api/User/${deletingGuest.userID}`,
         {
           headers: {
-            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
@@ -310,45 +313,27 @@ const ManageGuests = () => {
 
       if (response.status === 200 || response.status === 204) {
         setGuests(prevGuests => 
-          prevGuests.filter(g => g.userID !== deletingGuest.userID)
+          prevGuests.filter(guest => guest.userID !== deletingGuest.userID)
         );
-        setSuccessMessage(`Guest "${deletingGuest.name}" was successfully deleted`);
-        
-        // Close modal after short delay to show success message
-        setTimeout(() => {
-          setDeletingGuest(null);
-        }, 1500);
+        setSuccessMessage(`Guest ${deletingGuest.name} was successfully deleted`);
+        setDeletingGuest(null);
       }
+
     } catch (err) {
-      console.error('Delete error:', err);
-      if (err.response) {
-        switch (err.response.status) {
-          case 404:
-            setError('Guest not found. They may have been already deleted.');
-            // Remove from local state if not found
-            setGuests(prevGuests => 
-              prevGuests.filter(g => g.userID !== deletingGuest.userID)
-            );
-            break;
-          case 400:
-            setError('Cannot delete guest. Please check if they have any active bookings.');
-            break;
-          case 409:
-            setError('Cannot delete guest with active bookings or payments.');
-            break;
-          case 403:
-            setError('You do not have permission to delete this guest.');
-            break;
-          default:
-            setError('Failed to delete guest. Please try again.');
-        }
-      } else if (err.request) {
-        setError('Network error. Please check your connection.');
+      console.error('Delete error details:', err.response || err);
+      if (err.response?.status === 401) {
+        setError('Your session has expired. Please log in again.');
+        navigate('/login');
+      } else if (err.response?.status === 403) {
+        setError('You do not have permission to delete guests');
+      } else if (err.response?.status === 404) {
+        setError('Guest not found. They may have already been deleted.');
+        setDeletingGuest(null);
       } else {
-        setError('An unexpected error occurred.');
+        setError('Failed to delete guest. Please try again.');
       }
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -404,9 +389,9 @@ const ManageGuests = () => {
                     <ActionButton onClick={() => handleEditClick(guest)}>
                       <FiEdit2 /> Edit
                     </ActionButton>
-                    <ActionButton $variant="danger" onClick={() => handleDeleteClick(guest)}>
+                    {/* <ActionButton $variant="danger" onClick={() => handleDeleteClick(guest)}>
                       <FiTrash2 /> Delete
-                    </ActionButton>
+                    </ActionButton> */}
                   </ButtonGroup>
                 </Td>
               </Tr>

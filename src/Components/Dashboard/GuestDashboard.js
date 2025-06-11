@@ -3,7 +3,80 @@ import styled from 'styled-components';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
+import { FaUser, FaEnvelope, FaPhone, FaIdCard, FaEdit, FaCheckCircle } from 'react-icons/fa';
+import EditProfileModal from '../EditProfileModal';
+const ActionButton = styled.button`
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  width: 100%;
+  margin-bottom: 15px;
 
+  &:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+`;
+const EditButton = styled(ActionButton)`
+  margin-top: 15px;
+  background-color: #28a745;
+  width: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+
+  &:hover {
+    background-color: #218838;
+  }
+`;
+const ProfileCard = styled.div`
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+`;
+
+const ProfileHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+`;
+
+const Avatar = styled.div`
+  width: 80px;
+  height: 80px;
+  background: #007bff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+`;
+
+const ProfileInfo = styled.div`
+  display: grid;
+  gap: 15px;
+`;
+
+const InfoItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2c3e50;
+
+  svg {
+    color: #007bff;
+  }
+`;
 const DashboardContainer = styled.div`
   padding: 20px;
   max-width: 1200px;
@@ -58,25 +131,6 @@ const Card = styled.div`
     font-size: 1.5rem;
     border-bottom: 2px solid #007bff;
     padding-bottom: 10px;
-  }
-`;
-
-const ActionButton = styled.button`
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  width: 100%;
-  margin-bottom: 15px;
-
-  &:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
 `;
 
@@ -168,13 +222,119 @@ const BookingHeader = styled.div`
   }
 `;
 
+const SuccessNotification = styled.div`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  background-color: #28a745;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  animation: slideIn 0.5s ease-out;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  svg {
+    font-size: 1.2em;
+  }
+`;
+
 const GuestDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+  const [userLoading, setUserLoading] = useState(true);
   const navigate = useNavigate();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [updateTrigger, setUpdateTrigger] = useState(0);
+  const [successMessage, setSuccessMessage] = useState('');
   const RECENT_BOOKINGS_COUNT = 1;
-  useEffect(() => {
+  const fetchUserDetails = async (userID, token) => {
+    try {
+      const response = await axios.get(
+        `https://localhost:7125/api/User/${userID}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      const userData = response.data;
+      setUser(userData);
+      setUserLoading(false);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      return userData;
+    } catch (err) {
+      console.error('Error fetching user details:', err);
+      throw err;
+    }
+  };
+  const handleEditProfile = async (updatedData) => {
+    try {
+      const token = JSON.parse(localStorage.getItem('token'))?.token;
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+  
+      const response = await axios.patch(
+        `https://localhost:7125/api/User/${user.userID}`,
+        updatedData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+  
+      if (response.data) {
+        // Update local state
+        setUser(prevUser => ({
+          ...prevUser,
+          ...response.data
+        }));
+  
+        // Update localStorage
+        localStorage.setItem('user', JSON.stringify({
+          ...user,
+          ...response.data
+        }));
+  
+        // Set success message
+        setSuccessMessage(`Profile updated successfully! Welcome, ${response.data.name}!`);
+  
+        // Close modal and trigger refresh
+        setIsEditModalOpen(false);
+        setUpdateTrigger(prev => prev + 1);
+  
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          setSuccessMessage('');
+        }, 5000);
+      }
+    } catch (err) {
+      console.error('Update error:', err);
+      alert(err.response?.data?.message || 'Failed to update profile. Please try again.');
+    }
+  };
     const fetchBookings = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -211,8 +371,39 @@ const GuestDashboard = () => {
       }
     };
 
-    fetchBookings();
-  }, []);
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const tokenObj = token ? JSON.parse(token) : null;
+  
+          if (!tokenObj?.token) {
+            throw new Error('Authentication required');
+          }
+  
+          const decodedToken = jwtDecode(tokenObj.token);
+          const userID = decodedToken.nameid?.[0];
+  
+          if (!userID) {
+            throw new Error('User ID not found');
+          }
+  
+          // Fetch both user details and bookings
+          await Promise.all([
+            fetchUserDetails(userID, tokenObj.token),
+            fetchBookings()
+          ]);
+  
+        } catch (err) {
+          console.error('Error fetching data:', err);
+          setError(err.message || 'Failed to fetch data');
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchData();
+    }, [updateTrigger]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -225,12 +416,53 @@ const GuestDashboard = () => {
 
   return (
     <DashboardContainer>
-      <WelcomeSection>
-        <h1>Welcome to Your Dashboard</h1>
-        <p>Manage your bookings and explore our premium hotel services</p>
-      </WelcomeSection>
+      {successMessage && (
+        <SuccessNotification>
+          <FaCheckCircle />
+          {successMessage}
+        </SuccessNotification>
+      )}
+       <WelcomeSection>
+      <h1>Welcome {user?.name ? `, ${user.name}` : 'to Your Dashboard'}</h1>
+      <p>Manage your bookings and explore our premium hotel services</p>
+    </WelcomeSection>
 
       <CardGrid>
+      <Card>
+        {userLoading ? (
+          <LoadingSpinner>Loading profile...</LoadingSpinner>
+        ) : (
+          <>
+            <h3>Profile Information</h3>
+            <ProfileCard>
+              <ProfileHeader>
+                <Avatar>
+                  {user?.name ? user.name.charAt(0).toUpperCase() : <FaUser />}
+                </Avatar>
+                <h2>{user?.name || 'Guest'}</h2>
+              </ProfileHeader>
+              
+              <ProfileInfo>
+                <InfoItem>
+                  <FaIdCard />
+                  <span>User ID: {user?.userID}</span>
+                </InfoItem>
+                <InfoItem>
+                  <FaEnvelope />
+                  <span>{user?.email}</span>
+                </InfoItem>
+                <InfoItem>
+                  <FaPhone />
+                  <span>{user?.contactNumber || 'No phone number added'}</span>
+                </InfoItem>
+              </ProfileInfo>
+              <EditButton onClick={() => setIsEditModalOpen(true)}>
+    <FaEdit /> Edit Profile
+  </EditButton>
+            </ProfileCard>
+          </>
+        )}
+      </Card>
         <Card>
         <BookingHeader>
             <h3>Recent Bookings</h3>
@@ -280,19 +512,21 @@ const GuestDashboard = () => {
             Make New Booking
           </ActionButton>
         </Card>
-
         
-
-        <Card>
-          <h3>Special Offers</h3>
-          <p style={{ marginBottom: '20px', color: '#495057' }}>
-            Discover exclusive deals and luxury packages tailored for our valued guests.
-          </p>
-          <ActionButton onClick={() => navigate('/offers')}>
-            View Special Offers
-          </ActionButton>
-        </Card>
       </CardGrid>
+      {successMessage && (
+        <div style={{ textAlign: 'center', color: '#28a745', marginBottom: '20px' }}>
+          {successMessage}
+        </div>
+      )}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        userData={user}
+        onSave={(updatedData) => {
+          handleEditProfile(updatedData);
+        }}
+      />
     </DashboardContainer>
   );
 };

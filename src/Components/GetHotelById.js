@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styled from "styled-components";
-import GetHotelReviews from './GetHotelReviews';
+import GetHotelReviews from "./GetHotelReviews";
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-              url('/Images/362619.jpg');
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("/Images/362619.jpg");
   background-size: cover;
   background-attachment: fixed;
   padding: 40px 20px;
@@ -18,14 +18,14 @@ const HotelContainer = styled.div`
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   overflow: hidden;
 `;
 
 const HotelHeader = styled.div`
   position: relative;
   height: 300px;
-  background: ${props => `url(${props.$imageSrc})`};
+  background: ${(props) => `url(${props.$imageSrc})`};
   background-size: cover;
   background-position: center;
   color: white;
@@ -35,13 +35,13 @@ const HotelHeader = styled.div`
   justify-content: flex-end;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.7));
+    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.7));
   }
 `;
 
@@ -82,7 +82,7 @@ const DetailItem = styled.div`
   padding: 15px;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 `;
 
 const DetailLabel = styled.span`
@@ -99,7 +99,7 @@ const BookingSection = styled.div`
   background: white;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 `;
 
 const DateInput = styled.input`
@@ -113,7 +113,7 @@ const DateInput = styled.input`
   &:focus {
     border-color: #007bff;
     outline: none;
-    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
   }
 `;
 
@@ -157,10 +157,22 @@ const LoadingSpinner = styled.div`
   animation: spin 1s linear infinite;
 
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;
+
+const WarningMessage = styled.div`
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: -10px;
+  margin-bottom: 10px;
+`;
+
 const ReviewsSection = styled.div`
   grid-column: 1 / -1;
   margin-top: 30px;
@@ -171,7 +183,7 @@ const HotelDetailsCard = styled.div`
   border-radius: 12px;
   padding: 30px;
   margin-bottom: 40px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 `;
 
 const HotelName2 = styled.h1`
@@ -193,7 +205,7 @@ const InfoItem = styled.div`
   align-items: center;
   gap: 10px;
   color: #34495e;
-  
+
   svg {
     width: 20px;
     height: 20px;
@@ -201,23 +213,46 @@ const InfoItem = styled.div`
   }
 `;
 
-const GetHotelsById = ({isEmbedded=false, embeddedCheckIn='', embeddedCheckOut=''}) => {
+const GetHotelsById = ({
+  isEmbedded = false,
+  embeddedCheckIn = "",
+  embeddedCheckOut = "",
+}) => {
   const { hotelID } = useParams();
   const [hotel, setHotel] = useState(null);
   const [error, setError] = useState(null);
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
   const navigate = useNavigate();
 
   const getRandomImage = () => {
-    const images = ['/Images/1390015.jpg', '/Images/362619.jpg', '/Images/366875.jpg'];
+    const images = [
+      "/Images/1390015.jpg",
+      "/Images/362619.jpg",
+      "/Images/366875.jpg",
+    ];
     return images[Math.floor(Math.random() * images.length)];
+  };
+
+  // Add this function after state declarations
+  const getMaxDate = () => {
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 1);
+    return maxDate.toISOString().split("T")[0];
+  };
+
+  // Add this validation function after getMaxDate()
+  const validateDates = (checkIn, checkOut) => {
+    if (!checkIn || !checkOut) return true;
+    return new Date(checkOut) > new Date(checkIn);
   };
 
   useEffect(() => {
     const fetchHotel = async () => {
       try {
-        const response = await axios.get(`https://localhost:7125/api/Hotels/${hotelID}`);
+        const response = await axios.get(
+          `https://localhost:7125/api/Hotels/${hotelID}`
+        );
         setHotel(response.data);
       } catch (error) {
         setError("Error fetching hotel: " + error.message);
@@ -233,7 +268,7 @@ const GetHotelsById = ({isEmbedded=false, embeddedCheckIn='', embeddedCheckOut='
     return (
       <PageContainer>
         <HotelContainer>
-          <div style={{ padding: 20, color: '#dc3545' }}>{error}</div>
+          <div style={{ padding: 20, color: "#dc3545" }}>{error}</div>
         </HotelContainer>
       </PageContainer>
     );
@@ -244,34 +279,36 @@ const GetHotelsById = ({isEmbedded=false, embeddedCheckIn='', embeddedCheckOut='
       <PageContainer>
         <HotelContainer>
           <LoadingSpinner />
-          <p style={{ textAlign: 'center', color: '#666' }}>Loading hotel details...</p>
+          <p style={{ textAlign: "center", color: "#666" }}>
+            Loading hotel details...
+          </p>
         </HotelContainer>
       </PageContainer>
     );
   }
 
-  return isEmbedded?(
+  return isEmbedded ? (
     <HotelDetailsCard>
-    <HotelName>{hotel.name}</HotelName>
-    <HotelInfo>
+      <HotelName>{hotel.name}</HotelName>
+      <HotelInfo>
         <InfoItem>
-            <span>📍</span>
-            <span>{hotel.location}</span>
+          <span>📍</span>
+          <span>{hotel.location}</span>
         </InfoItem>
         <InfoItem>
-            <span>⭐</span>
-            <span>{hotel.rating} Rating</span>
+          <span>⭐</span>
+          <span>{hotel.rating} Rating</span>
         </InfoItem>
         <InfoItem>
-            <span>📅</span>
-            <span>
-              {new Date(embeddedCheckIn).toLocaleDateString()} - {new Date(embeddedCheckOut).toLocaleDateString()}
-            </span>
+          <span>📅</span>
+          <span>
+            {new Date(embeddedCheckIn).toLocaleDateString()} -{" "}
+            {new Date(embeddedCheckOut).toLocaleDateString()}
+          </span>
         </InfoItem>
-    </HotelInfo>
-</HotelDetailsCard>
-  ): 
-  (
+      </HotelInfo>
+    </HotelDetailsCard>
+  ) : (
     <PageContainer>
       <HotelContainer>
         <HotelHeader $imageSrc={getRandomImage()}>
@@ -294,43 +331,83 @@ const GetHotelsById = ({isEmbedded=false, embeddedCheckIn='', embeddedCheckOut='
                 title="Hotel Location"
                 width="100%"
                 height="100%"
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(hotel.location)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                  hotel.location
+                )}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
               />
             </MapContainer>
           </DetailsList>
 
+          {/* Update the BookingSection JSX */}
           <BookingSection>
             <h3 style={{ marginBottom: 20 }}>Book Your Stay</h3>
             <DateInput
               type="date"
               value={checkIn}
-              onChange={(e) => setCheckIn(e.target.value)}
-              min={new Date().toISOString().split('T')[0]}
+              onChange={(e) => {
+                const selectedDate = new Date(e.target.value);
+                const maxDate = new Date(getMaxDate());
+                if (selectedDate <= maxDate) {
+                  setCheckIn(e.target.value);
+                  // Clear checkout if it's before new checkin
+                  if (checkOut && new Date(checkOut) <= selectedDate) {
+                    setCheckOut("");
+                  }
+                }
+              }}
+              min={new Date().toISOString().split("T")[0]}
+              max={getMaxDate()}
               required
               placeholder="Check-in Date"
             />
+            {checkIn && new Date(checkIn) > new Date(getMaxDate()) && (
+              <WarningMessage>
+                Check-in date cannot be more than 1 year from today
+              </WarningMessage>
+            )}
             <DateInput
               type="date"
               value={checkOut}
-              onChange={(e) => setCheckOut(e.target.value)}
-              min={checkIn || new Date().toISOString().split('T')[0]}
+              onChange={(e) => {
+                const selectedDate = new Date(e.target.value);
+                const maxDate = new Date(getMaxDate());
+                if (selectedDate <= maxDate) {
+                  setCheckOut(e.target.value);
+                }
+              }}
+              min={checkIn || new Date().toISOString().split("T")[0]}
+              max={getMaxDate()}
               required
               placeholder="Check-out Date"
             />
+            {checkOut && new Date(checkOut) <= new Date(checkIn) && (
+              <WarningMessage>
+                Check-out date must be after check-in date
+              </WarningMessage>
+            )}
+            {checkOut && new Date(checkOut) > new Date(getMaxDate()) && (
+              <WarningMessage>
+                Check-out date cannot be more than 1 year from today
+              </WarningMessage>
+            )}
             <BookButton
               onClick={() => {
-                if (checkIn && checkOut) {
-                  navigate(`/available-rooms/${hotelID}/${checkIn}/${checkOut}`);
+                if (checkIn && checkOut && validateDates(checkIn, checkOut)) {
+                  navigate(
+                    `/available-rooms/${hotelID}/${checkIn}/${checkOut}`
+                  );
                 }
               }}
-              disabled={!checkIn || !checkOut}
+              disabled={
+                !checkIn || !checkOut || !validateDates(checkIn, checkOut)
+              }
             >
               View Available Rooms
             </BookButton>
           </BookingSection>
           <ReviewsSection>
-          <GetHotelReviews hotelID={hotelID} />
-        </ReviewsSection>
+            <GetHotelReviews hotelID={hotelID} />
+          </ReviewsSection>
         </ContentGrid>
       </HotelContainer>
     </PageContainer>

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiUserPlus, FiTrash2, FiSearch } from 'react-icons/fi';
+import { FiArrowLeft, FiUserPlus, FiTrash2, FiSearch, FiEdit } from 'react-icons/fi';
 import axios from 'axios';
 import styled from 'styled-components';
+import { getToken } from '../../Services/AuthService'; // Updated import path
 import {
   PageContainer,
   HeaderSection,
@@ -97,6 +98,27 @@ const Overlay = styled.div`
   z-index: 1000;
 `;
 
+const ResponsiveTable = styled(Table)`
+  @media (max-width: 768px) {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    th, td {
+      min-width: 120px; // Ensure columns don't get too narrow
+      &:last-child {
+        min-width: 160px; // More space for action buttons
+      }
+    }
+  }
+`;
+
+const ActionButtons = styled(ButtonGroup)`
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+`;
+
 const ManageManagers = () => {
   const navigate = useNavigate();
   const [managers, setManagers] = useState([]);
@@ -106,6 +128,7 @@ const ManageManagers = () => {
   const [isAddingManager, setIsAddingManager] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [deletingManager, setDeletingManager] = useState(null);
+  const [editingManager, setEditingManager] = useState(null);
 
   useEffect(() => {
     fetchManagers();
@@ -149,50 +172,86 @@ const ManageManagers = () => {
 
   const confirmDelete = async () => {
     try {
-      // Set loading state
       setLoading(true);
       setError(null);
+      setSuccessMessage('');
 
-      // Make the DELETE request
-      await axios.delete(`https://localhost:7125/api/User/${deletingManager.userID}`);
+      const token = getToken();
+      
+      if (!token) {
+        setError('Your session has expired. Please log in again.');
+        navigate('/login');
+        return;
+      }
 
-      // Update the local state
-      setManagers(prevManagers => 
-        prevManagers.filter(manager => manager.userID !== deletingManager.userID)
+      const response = await axios.delete(
+        `https://localhost:7125/api/User/${deletingManager.userID}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}` // Removed 'Content-Type' header
+          }
+        }
       );
-      
-      // Show success message
-      setSuccessMessage(`Manager ${deletingManager.name} was successfully deleted`);
-      
-      // Clear the deleting state
-      setDeletingManager(null);
+
+      if (response.status === 200 || response.status === 204) {
+        setManagers(prevManagers => 
+          prevManagers.filter(manager => manager.userID !== deletingManager.userID)
+        );
+        setSuccessMessage(`Manager ${deletingManager.name} was successfully deleted`);
+        setDeletingManager(null);
+      }
 
     } catch (err) {
-      // Handle specific error cases
-      if (err.response) {
-        switch (err.response.status) {
-          case 404:
-            setError(`Manager with ID ${deletingManager.userID} not found`);
-            // Remove from local state if not found on server
-            setManagers(prevManagers => 
-              prevManagers.filter(manager => manager.userID !== deletingManager.userID)
-            );
-            break;
-          case 403:
-            setError('You do not have permission to delete this manager');
-            break;
-          default:
-            setError(err.response.data?.message || 'Failed to delete manager. Please try again.');
-        }
+      if (err.response?.status === 401) {
+        setError('Your session has expired. Please log in again.');
+        navigate('/login');
+      } else if (err.response?.status === 403) {
+        setError('You do not have permission to delete managers');
       } else {
-        setError('Network error occurred. Please check your connection and try again.');
+        setError(err.response?.data?.message || 'Failed to delete manager');
       }
+      console.error('Delete manager error:', err);
     } finally {
       setLoading(false);
-      // Clear deleting state after a short delay to allow animation
-      setTimeout(() => {
-        setDeletingManager(null);
-      }, 500);
+    }
+  };
+
+  const handleEditClick = (manager) => {
+    setEditingManager(manager);
+    setError('');
+    setSuccessMessage('');
+  };
+
+  const handleEditSave = async (updatedManager) => {
+    try {
+      const token = getToken();
+      if (!token) {
+        setError('Your session has expired. Please log in again.');
+        navigate('/login');
+        return;
+      }
+
+      const response = await axios.patch(
+        `https://localhost:7125/api/User/${updatedManager.userID}`,
+        updatedManager,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        setManagers(prevManagers =>
+          prevManagers.map(m => 
+            m.userID === updatedManager.userID ? updatedManager : m
+          )
+        );
+        setSuccessMessage('Manager updated successfully');
+        setEditingManager(null);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update manager');
     }
   };
 
@@ -220,7 +279,7 @@ const ManageManagers = () => {
         {loading ? (
           <LoadingSpinner>Loading managers...</LoadingSpinner>
         ) : (
-          <Table>
+          <ResponsiveTable>
             <thead>
               <tr>
                 <Th>ID</Th>
@@ -238,14 +297,25 @@ const ManageManagers = () => {
                   <Td>{manager.email}</Td>
                   <Td>{manager.contactNumber}</Td>
                   <Td>
-                    <ActionButton $variant="danger" onClick={() => handleDeleteClick(manager)}>
-                      <FiTrash2 /> Delete
-                    </ActionButton>
+                    <ActionButtons>
+                      <ActionButton 
+                        onClick={() => handleEditClick(manager)}
+                      
+                      >
+                        <FiEdit /> Edit
+                      </ActionButton>
+                      {/* <ActionButton 
+                        $variant="danger" 
+                        onClick={() => handleDeleteClick(manager)}
+                      >
+                        <FiTrash2 /> Delete
+                      </ActionButton> */}
+                    </ActionButtons>
                   </Td>
                 </Tr>
               ))}
             </tbody>
-          </Table>
+          </ResponsiveTable>
         )}
       </ContentCard>
 
@@ -255,6 +325,15 @@ const ManageManagers = () => {
           manager={null}
           onSave={handleAddManager}
           onCancel={() => setIsAddingManager(false)}
+        />
+      )}
+
+      {editingManager && (
+        <EditManagerModal
+          isAdd={false}
+          manager={editingManager}
+          onSave={handleEditSave}
+          onCancel={() => setEditingManager(null)}
         />
       )}
 

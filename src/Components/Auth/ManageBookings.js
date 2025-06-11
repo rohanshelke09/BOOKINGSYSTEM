@@ -538,12 +538,12 @@ const ManageBookings = () => {
                     >
                       <FiEdit2 /> Edit
                     </ActionButton>
-                    <ActionButton 
+                    {/* <ActionButton 
                       $variant="danger"
                       onClick={() => handleDeleteClick(booking)}
                     >
                       <FiTrash2 /> Delete
-                    </ActionButton>
+                    </ActionButton> */}
                   </ButtonGroup>
                 </Td>
               </Tr>

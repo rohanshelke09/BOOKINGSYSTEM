@@ -65,6 +65,7 @@ function App() {
         <Header />
         <MainContent>
           <Routes>
+            {/* Anyone show Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<UserRegistration />} />
             <Route path="/" element={<Home />} />
@@ -92,16 +93,30 @@ function App() {
               <Route path="/manage-bookings" element={<ManageBookings />} />
               <Route path="/manage-reviews" element={<ManageReviews />} />
             </Route>
-
             {/* Manager Routes */}
             <Route element={<ProtectedRoute allowedRoles={["manager"]} />}>
-            {/* <Route path="/manager-dashboard" element={<ManagerDashboard/>} />
-            <Route path="/hotel-rooms/:hotelID" element={<GetRoomsByHotel />} />
-            <Route path="/bookings/:bookingId" element={<GetBookingByBookingId />} />
-            <Route path="/hotel-rooms/:hotelID/manage" element={<RoomManagement />} />
-            <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
-            <Route path="/hotel-rooms/:hotelID/update" element={<UpdateRoom />} />
-            <Route path="/available-rooms/:hotelID/:checkIn/:checkOut" element={<GetAvailableRooms />} /> */}
+              <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+              <Route
+                path="/hotel-rooms/:hotelID"
+                element={<GetRoomsByHotel />}
+              />
+              <Route
+                path="/bookings/:bookingId"
+                element={<GetBookingByBookingId />}
+              />
+              <Route
+                path="/hotel-rooms/:hotelID/manage"
+                element={<RoomManagement />}
+              />
+              <Route path="/hotel-rooms/:hotelID/add" element={<AddRoom />} />
+              <Route
+                path="/hotel-rooms/:hotelID/update"
+                element={<UpdateRoom />}
+              />
+              <Route
+                path="/available-rooms/:hotelID/:checkIn/:checkOut"
+                element={<GetAvailableRooms />}
+              />
 
               <Route path="/manager-dashboard" element={<ManagerDashboard />} />
               <Route
@@ -141,7 +156,6 @@ function App() {
                 element={<GetBookingByRoom />}
               />
             </Route>
-
             {/* Guest Routes */}
             <Route element={<ProtectedRoute allowedRoles={["guest"]} />}>
               <Route path="/guest-dashboard" element={<GuestDashboard />} />

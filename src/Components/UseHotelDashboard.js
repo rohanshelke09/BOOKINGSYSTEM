@@ -11,21 +11,38 @@ const UseHotelDashboard = () => {
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     totalBookings: 0,
-    occupancyRate: 0,
-    revenue: 0,
+    // occupancyRate: 0,
+    // revenue: 0,
     availableRooms: 0
   });
 
-  const calculateOccupancyRate = (bookings) => {
-    if (!Array.isArray(bookings) || bookings.length === 0) return 0;
+  const calculateOccupancyRate = (bookings, totalRooms) => {
+    if (!Array.isArray(bookings) || bookings.length === 0 || !totalRooms) return 0;
     
-    const confirmedBookings = bookings.filter(booking => booking.status === 'confirmed');
-    const rate = (confirmedBookings.length / bookings.length) * 100;
+    const currentDate = new Date();
+    
+    // Count currently active bookings
+    const activeBookings = bookings.filter(booking => {
+      const checkIn = new Date(booking.checkInDate);
+      const checkOut = new Date(booking.checkOutDate);
+      return (
+        (booking.status === 'confirmed' || booking.status === 'checked-in') &&
+        currentDate >= checkIn &&
+        currentDate <= checkOut
+      );
+    });
+
+    // Calculate occupancy rate based on active bookings and total rooms
+    const occupiedRooms = activeBookings.length;
+    const rate = (occupiedRooms / totalRooms) * 100;
+    
     console.log('Occupancy calculation:', {
-      confirmed: confirmedBookings.length,
-      total: bookings.length,
+      occupied: occupiedRooms,
+      totalRooms: totalRooms,
       rate: rate
     });
+
+    // Return rate with one decimal place
     return parseFloat(rate.toFixed(1));
   };
 
@@ -39,16 +56,16 @@ const UseHotelDashboard = () => {
     return availableRooms.length;
   };
 
-  const calculateRevenue = (bookings) => {
-    if (!Array.isArray(bookings)) return 0;
-    const revenue = bookings.reduce((total, booking) => {
-      if (booking.status === 'confirmed') {
-        return total + (booking.amount || 0);
-      }
-      return total;
-    }, 0);
-    return revenue;
-  };
+  // const calculateRevenue = (bookings) => {
+  //   if (!Array.isArray(bookings)) return 0;
+  //   const revenue = bookings.reduce((total, booking) => {
+  //     if (booking.status === 'confirmed') {
+  //       return total + (booking.amount || 0);
+  //     }
+  //     return total;
+  //   }, 0);
+  //   return revenue;
+  // };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,26 +102,29 @@ const UseHotelDashboard = () => {
         setHotelDetails(hotelResponse.data);
         setHotelID(currentHotelId);
 
-        // Fetch bookings and rooms only if we have a hotel
+        // Fetch bookings and rooms only have hotel
         if (currentHotelId) {
           const [bookingsResponse, roomsResponse] = await Promise.all([
             axios.get(`https://localhost:7125/api/Bookings/hotel/${currentHotelId}`, {
               headers: { Authorization: `Bearer ${tokenObj.token}` }
             }),
-            axios.get(`https://localhost:7125/api/Rooms/hotel/${currentHotelId}`, {
+            axios.get(`https://localhost:7125/api/Rooms/${currentHotelId}/rooms`, {
               headers: { Authorization: `Bearer ${tokenObj.token}` }
             })
           ]);
 
-          setBookings(bookingsResponse.data || []);
-          setRooms(roomsResponse.data || []);
-          
-          // Update stats only if we have valid data
+          const bookingsData = bookingsResponse.data || [];
+          const roomsData = roomsResponse.data || [];
+          const totalRooms = roomsData.length;
+
+          setBookings(bookingsData);
+          setRooms(roomsData);
+
           setStats({
-            totalBookings: bookingsResponse.data?.length || 0,
-            occupancyRate: calculateOccupancyRate(bookingsResponse.data),
-            revenue: calculateRevenue(bookingsResponse.data),
-            availableRooms: calculateAvailableRooms(roomsResponse.data)
+            totalBookings: bookingsData.length,
+            occupancyRate: calculateOccupancyRate(bookingsData, totalRooms),
+            // revenue: calculateRevenue(bookingsData),
+            availableRooms: calculateAvailableRooms(roomsData)
           });
         }
 

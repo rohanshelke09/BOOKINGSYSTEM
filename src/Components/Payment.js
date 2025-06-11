@@ -150,16 +150,22 @@ const Payment = () => {
     expiryDate: '',
     cvv: ''
   });
-
+  const calculateTotalDays = (checkIn, checkOut) => {
+    const startDate = new Date(checkIn);
+    const endDate = new Date(checkOut);
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
   // Get booking details from location state
-  const { price ,bookingID} = location.state || {};
-
+  const { price ,bookingID, checkIn,checkOut} = location.state || {};
+  const totalDays = calculateTotalDays(checkIn, checkOut);
+  const totalAmount = price * totalDays;
   useEffect(() => {
-    // if (!bookingID || !price) {
-    //   navigate('/');
-    // }
-  }, [bookingID, price, navigate]);
-
+    console.log('Price:', price);
+    console.log('Total Days:', totalDays);
+    console.log('Total Amount:', totalAmount);
+  }, [price, totalDays, totalAmount]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -179,7 +185,7 @@ const Payment = () => {
       const paymentData = {
         userID: parseInt(userID),
         bookingID: bookingID,
-        amount: price,
+        amount: totalAmount,
         status: true,
         paymentMethod: paymentMethod
       };
@@ -198,14 +204,14 @@ const Payment = () => {
       if (response.status === 201) {
         // Payment successful
         navigate('/payment-success', { 
-            state: { 
-                paymentDetails: {
-                  ...response.data,
-                  amount: price,
-                  paymentMethod
-                },
-                bookingID
-              }
+          state: { 
+            paymentDetails: {
+              ...response.data,
+              amount: totalAmount, // Use calculated total amount
+              paymentMethod
+            },
+            bookingID
+          }
         });
       }
     } catch (err) {
@@ -227,7 +233,9 @@ const Payment = () => {
         <PaymentSummary>
           <h3>Payment Summary</h3>
           <p>Booking ID: {bookingID}</p>
-          <p className="amount">Amount: ${price}</p>
+          <p>Number of nights: {totalDays}</p>
+          <p>Price per night: ${price}</p>
+          <p className="amount">Total Amount: ${totalAmount}</p>
         </PaymentSummary>
 
         <PaymentMethods>

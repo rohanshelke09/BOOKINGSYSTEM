@@ -113,18 +113,18 @@ const ManagerDashboard = () => {
       value: stats.totalBookings,
       color: "#2193b0"
     },
-    {
-      icon: FaChartLine,
-      label: "Occupancy Rate",
-      value: `${stats.occupancyRate}%`,
-      color: "#00b894"
-    },
-    {
-      icon: FaDollarSign,
-      label: "Total Revenue",
-      value: `$${stats.revenue.toLocaleString()}`,
-      color: "#00cec9"
-    },
+    // {
+    //   icon: FaChartLine,
+    //   label: "Occupancy Rate",
+    //   value: `${stats.occupancyRate}%`,
+    //   color: "#00b894"
+    // },
+    // {
+    //   icon: FaDollarSign,
+    //   label: "Total Revenue",
+    //   value: `$${stats.revenue.toLocaleString()}`,
+    //   color: "#00cec9"
+    // },
     {
       icon: FaBed,
       label: "Available Rooms",

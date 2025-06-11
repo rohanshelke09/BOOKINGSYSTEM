@@ -168,7 +168,7 @@ const Home = () => {
     }
   };
 
-  // Debounced search function
+  
   const filterHotels = useCallback(() => {
     let filtered = [...allHotels];
 
@@ -199,11 +199,11 @@ const Home = () => {
     setError(filtered.length === 0 ? 'No hotels match your search criteria.' : null);
   }, [filters, allHotels]);
 
-  // Handle input changes
+  // handle input changes
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       filterHotels();
-    }, 300); // 300ms delay for typing
+    }, 300); // 300ms delay repsonse when typing
 
     return () => clearTimeout(delayDebounce);
   }, [filters, filterHotels]);
@@ -222,7 +222,7 @@ const Home = () => {
         <Title>Find Your Perfect Stay</Title>
         <SearchForm onSubmit={(e) => e.preventDefault()}>
           <SearchGroup>
-            <SearchLabel>Hotel Name</SearchLabel>
+            {/* <SearchLabel>Hotel Name</SearchLabel> */}
             <SearchContainer>
               <SearchInput
                 type="text"
@@ -239,7 +239,7 @@ const Home = () => {
           </SearchGroup>
 
           <SearchGroup>
-            <SearchLabel>Location</SearchLabel>
+            {/* <SearchLabel>Location</SearchLabel> */}
             <SearchContainer>
               <SearchInput
                 type="text"
@@ -256,7 +256,7 @@ const Home = () => {
           </SearchGroup>
 
           <SearchGroup>
-            <SearchLabel>Amenities</SearchLabel>
+            {/* <SearchLabel>Amenities</SearchLabel> */}
             <SearchContainer>
               <SearchInput
                 type="text"

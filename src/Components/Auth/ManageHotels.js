@@ -18,6 +18,7 @@ import {
 } from '../Styles/ManagePageStyles';
 import styled from 'styled-components';
 import axios from 'axios';
+import { getToken } from '../../Services/AuthService';
 
 const SearchBar = styled.div`
   display: flex;
@@ -186,6 +187,126 @@ const ConfirmationModalButtons = styled(ModalButtons)`
   justify-content: space-between;
 `;
 
+const StyledSelect = styled.select`
+  width: 100%;
+  padding: 0.875rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: #f9fafb;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234b5563' viewBox='0 0 16 16'%3E%3Cpath d='M8 10l4-4H4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+
+  &:hover {
+    border-color: #d1d5db;
+  }
+
+  &:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    outline: none;
+    background-color: white;
+  }
+
+  &:disabled {
+    background-color: #e5e7eb;
+    cursor: not-allowed;
+  }
+`;
+
+// Add memoization for the form inputs to prevent unnecessary re-renders
+const EditHotelForm = React.memo(({ 
+  editingHotel, 
+  onInputChange, 
+  onSubmit, 
+  error, 
+  loadingManagers, 
+  availableManagers,
+  onCancel 
+}) => (
+  <EditForm onSubmit={onSubmit}>
+    <EditFormGroup>
+      <label>Hotel Name</label>
+      <input
+        type="text"
+        value={editingHotel.name || ''}
+        onChange={e => onInputChange('name', e.target.value)}
+        required
+        placeholder="Enter hotel name"
+      />
+    </EditFormGroup>
+
+    <EditFormGroup>
+      <label>Location</label>
+      <input
+        type="text"
+        value={editingHotel.location || ''}
+        onChange={e => onInputChange('location', e.target.value)}
+        required
+        placeholder="Enter hotel location"
+      />
+    </EditFormGroup>
+
+    <EditFormGroup>
+      <label>Amenities</label>
+      <textarea
+        value={editingHotel.amenities || ''}
+        onChange={e => onInputChange('amenities', e.target.value)}
+        required
+        placeholder="Enter hotel amenities (comma separated)"
+      />
+    </EditFormGroup>
+
+    <EditFormGroup>
+      <label>Select Manager</label>
+      {loadingManagers ? (
+        <div>Loading available managers...</div>
+      ) : (
+        <StyledSelect
+          value={editingHotel.managerID || ''}
+          onChange={e => onInputChange('managerID', e.target.value)}
+          required
+        >
+          <option value="">Select a manager</option>
+          {availableManagers.map(manager => (
+            <option 
+              key={manager.userID} 
+              value={manager.userID}
+            >
+              {`ID: ${manager.userID} - ${manager.name}`}
+              {editingHotel.managerID === manager.userID ? ' (Current)' : ' (Available)'}
+            </option>
+          ))}
+        </StyledSelect>
+      )}
+      {availableManagers.length === 0 && !loadingManagers && (
+        <span style={{ color: '#666', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+          No unassigned managers available
+        </span>
+      )}
+      {error && (
+        <span style={{ color: 'red', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+          {error}
+        </span>
+      )}
+    </EditFormGroup>
+
+    <ModalButtons>
+      <ActionButton type="button" onClick={onCancel}>
+        Cancel
+      </ActionButton>
+      <ActionButton type="submit" $variant="primary">
+        {editingHotel.hotelID ? 'Save Changes' : 'Add Hotel'}
+      </ActionButton>
+    </ModalButtons>
+  </EditForm>
+));
+
 const ManageHotels = () => {
   const navigate = useNavigate();
   const { hotels, loading, error: apiError, fetchHotels, deleteHotel } = useHotelManagement();
@@ -195,10 +316,74 @@ const ManageHotels = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingHotel, setDeletingHotel] = useState(null);
+  const [availableManagers, setAvailableManagers] = useState([]);
+  const [loadingManagers, setLoadingManagers] = useState(false);
 
   useEffect(() => {
     fetchHotels();
   }, [fetchHotels]);
+
+  const fetchAvailableManagers = async () => {
+    try {
+      setLoadingManagers(true);
+      const token = getToken();
+      
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+  
+      // Get all managers by role
+      const managersResponse = await axios.get(
+        'https://localhost:7125/api/User/by-role/manager',
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+  
+      // Get all hotels
+      const hotelsResponse = await axios.get(
+        'https://localhost:7125/api/Hotels',
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+  
+      // Get array of assigned manager IDs from hotels
+      const assignedManagerIds = new Set(
+        hotelsResponse.data.map(hotel => hotel.managerID)
+      );
+  
+      // Filter to get only unassigned managers, except current manager if editing
+      let availableManagersList = managersResponse.data.filter(manager => {
+        // Include manager if they're unassigned OR if they're the current manager of the hotel being edited
+        return !assignedManagerIds.has(manager.userID) || 
+               (editingHotel && manager.userID === editingHotel.managerID);
+      });
+  
+      // Sort managers by name
+      availableManagersList.sort((a, b) => a.name.localeCompare(b.name));
+  
+      console.log('Unassigned managers:', availableManagersList);
+      setAvailableManagers(availableManagersList);
+  
+    } catch (err) {
+      console.error('Error fetching available managers:', err);
+      setError('Failed to load available managers: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setLoadingManagers(false);
+    }
+  };
+
+  useEffect(() => {
+    if (editingHotel) {
+      fetchAvailableManagers();
+    }
+  }, [editingHotel]);
 
   const filteredHotels = hotels.filter(hotel => 
     hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -209,6 +394,13 @@ const ManageHotels = () => {
     setEditingHotel(hotel);
     setSuccessMessage('');
   };
+
+  const handleInputChange = React.useCallback((field, value) => {
+    setEditingHotel(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
 
   const handleSaveEdit = async (e) => {
     e.preventDefault();
@@ -230,7 +422,7 @@ const ManageHotels = () => {
         return;
       }
       if (!editingHotel.managerID) {
-        setError('Manager ID is required');
+        setError('Please select a manager');
         return;
       }
 
@@ -280,7 +472,9 @@ const ManageHotels = () => {
       if (error.response?.status === 404) {
         setError('Hotel not found. It may have been deleted.');
       } else if (error.response?.status === 400) {
-        setError(error.response.data.message || 'Invalid hotel data. Please check all fields.');
+        setError('Invalid hotel data. Please check all fields.');
+      } else if (error.response?.status === 409) {
+        setError('This manager is already assigned to another hotel.');
       } else {
         setError('Failed to save hotel. Please try again.');
       }
@@ -399,12 +593,12 @@ const ManageHotels = () => {
                     <ActionButton onClick={() => handleEditClick(hotel)}>
                       <FiEdit2 /> Edit
                     </ActionButton>
-                    <ActionButton 
+                    {/* <ActionButton 
                       $variant="danger"
                       onClick={() => handleDeleteClick(hotel)}
                     >
                       <FiTrash2 /> Delete
-                    </ActionButton>
+                    </ActionButton> */}
                   </ButtonGroup>
                 </Td>
               </Tr>
@@ -419,80 +613,18 @@ const ManageHotels = () => {
           <EditModal onClick={e => e.stopPropagation()}>
             <h2>{editingHotel.hotelID ? 'Edit Hotel' : 'Add New Hotel'}</h2>
             {error && <Message $type="error">{error}</Message>}
-            <EditForm onSubmit={handleSaveEdit}>
-              <EditFormGroup>
-                <label>Hotel Name</label>
-                <input
-                  type="text"
-                  value={editingHotel.name || ''}
-                  onChange={e => setEditingHotel(prev => ({
-                    ...prev,
-                    name: e.target.value
-                  }))}
-                  required
-                  placeholder="Enter hotel name"
-                />
-              </EditFormGroup>
-
-              <EditFormGroup>
-                <label>Location</label>
-                <input
-                  type="text"
-                  value={editingHotel.location || ''}
-                  onChange={e => setEditingHotel(prev => ({
-                    ...prev,
-                    location: e.target.value
-                  }))}
-                  required
-                  placeholder="Enter hotel location"
-                />
-              </EditFormGroup>
-
-              <EditFormGroup>
-                <label>Amenities</label>
-                <textarea
-                  value={editingHotel.amenities || ''}
-                  onChange={e => setEditingHotel(prev => ({
-                    ...prev,
-                    amenities: e.target.value
-                  }))}
-                  required
-                  placeholder="Enter hotel amenities (comma separated)"
-                />
-              </EditFormGroup>
-
-              <EditFormGroup>
-                <label>Manager ID</label>
-                <input
-                  type="number"
-                  value={editingHotel.managerID || ''}
-                  onChange={e => setEditingHotel(prev => ({
-                    ...prev,
-                    managerID: e.target.value
-                  }))}
-                  required
-                  placeholder="Enter manager ID"
-                />
-              </EditFormGroup>
-
-              <ModalButtons>
-                <ActionButton
-                  type="button"
-                  onClick={() => {
-                    setEditingHotel(null);
-                    setSuccessMessage('');
-                  }}
-                >
-                  Cancel
-                </ActionButton>
-                <ActionButton
-                  type="submit"
-                  $variant="primary"
-                >
-                  {editingHotel.hotelID ? 'Save Changes' : 'Add Hotel'}
-                </ActionButton>
-              </ModalButtons>
-            </EditForm>
+            <EditHotelForm
+              editingHotel={editingHotel}
+              onInputChange={handleInputChange}
+              onSubmit={handleSaveEdit}
+              error={error}
+              loadingManagers={loadingManagers}
+              availableManagers={availableManagers}
+              onCancel={() => {
+                setEditingHotel(null);
+                setSuccessMessage('');
+              }}
+            />
           </EditModal>
         </>
       )}
