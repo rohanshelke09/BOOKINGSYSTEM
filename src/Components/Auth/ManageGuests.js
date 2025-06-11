@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiTrash2, FiEdit2, FiSearch } from 'react-icons/fi';
 import axios from 'axios';
 import styled from 'styled-components';
+<<<<<<< HEAD
 import { getToken } from '../../Services/AuthService';
+=======
+
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
 import {
   PageContainer,
   HeaderSection,
@@ -243,15 +247,12 @@ const ManageGuests = () => {
         role: "guest"
       };
 
+
+
       const response = await axios.patch(
-        `https://localhost:7125/api/User/${editingGuest.userID}`,
-        updateData,
-        {
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }
+        `https://localhost:7125/api/User/${updateData.userID}`,
+        updateData
+
       );
 
       if (response.status === 200 || response.status === 204) {

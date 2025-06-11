@@ -351,7 +351,7 @@ const ViewGuests = () => {
     }
   }, [hotelID]);
 
-  const getBookingStatus = (checkIn, checkOut) => {
+  const getBookingStatus = (checkIn, checkOut, status) => {
     const now = new Date();
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);

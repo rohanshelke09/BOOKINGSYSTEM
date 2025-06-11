@@ -3,7 +3,11 @@ import styled from 'styled-components';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { FaUser, FaEnvelope, FaPhone, FaIdCard, FaEdit, FaCheckCircle } from 'react-icons/fa';
+=======
+import { FaUser, FaEnvelope, FaPhone, FaIdCard, FaEdit } from 'react-icons/fa';
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
 import EditProfileModal from '../EditProfileModal';
 const ActionButton = styled.button`
   background-color: #007bff;
@@ -134,6 +138,11 @@ const Card = styled.div`
   }
 `;
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
 const BookingCard = styled.div`
   padding: 20px;
   margin: 15px 0;
@@ -261,8 +270,11 @@ const GuestDashboard = () => {
   const [userLoading, setUserLoading] = useState(true);
   const navigate = useNavigate();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+<<<<<<< HEAD
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const [successMessage, setSuccessMessage] = useState('');
+=======
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
   const RECENT_BOOKINGS_COUNT = 1;
   const fetchUserDetails = async (userID, token) => {
     try {
@@ -275,6 +287,7 @@ const GuestDashboard = () => {
           }
         }
       );
+<<<<<<< HEAD
       
       const userData = response.data;
       setUser(userData);
@@ -285,10 +298,18 @@ const GuestDashboard = () => {
     } catch (err) {
       console.error('Error fetching user details:', err);
       throw err;
+=======
+      setUser(response.data);
+    } catch (err) {
+      console.error('Error fetching user details:', err);
+    } finally {
+      setUserLoading(false);
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
     }
   };
   const handleEditProfile = async (updatedData) => {
     try {
+<<<<<<< HEAD
       const token = JSON.parse(localStorage.getItem('token'))?.token;
       if (!token) {
         throw new Error('Authentication required');
@@ -300,10 +321,29 @@ const GuestDashboard = () => {
         {
           headers: {
             'Authorization': `Bearer ${token}`,
+=======
+      const token = localStorage.getItem('token');
+      const tokenObj = token ? JSON.parse(token) : null;
+
+      const updatedUser = {
+        userID: user.userID,
+        name: updatedData.name,
+        email: updatedData.email,
+        contactNumber: updatedData.contactNumber
+      };
+
+      const response = await axios.patch(
+        `https://localhost:7125/api/User/${user.userID}`,
+        updatedUser,
+        {
+          headers: {
+            Authorization: `Bearer ${tokenObj.token}`,
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
             'Content-Type': 'application/json'
           }
         }
       );
+<<<<<<< HEAD
   
       if (response.data) {
         // Update local state
@@ -333,6 +373,17 @@ const GuestDashboard = () => {
     } catch (err) {
       console.error('Update error:', err);
       alert(err.response?.data?.message || 'Failed to update profile. Please try again.');
+=======
+
+      if (response.data) {
+        setUser(response.data);
+        setIsEditModalOpen(false);
+        alert('Profile updated successfully!');
+      }
+    } catch (err) {
+      console.error('Update error:', err);
+      alert('Failed to update profile. Please try again.');
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
     }
   };
     const fetchBookings = async () => {
@@ -391,7 +442,11 @@ const GuestDashboard = () => {
           // Fetch both user details and bookings
           await Promise.all([
             fetchUserDetails(userID, tokenObj.token),
+<<<<<<< HEAD
             fetchBookings()
+=======
+            fetchBookings(userID, tokenObj.token)
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
           ]);
   
         } catch (err) {
@@ -403,7 +458,11 @@ const GuestDashboard = () => {
       };
   
       fetchData();
+<<<<<<< HEAD
     }, [updateTrigger]);
+=======
+    }, []);
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -416,6 +475,7 @@ const GuestDashboard = () => {
 
   return (
     <DashboardContainer>
+<<<<<<< HEAD
       {successMessage && (
         <SuccessNotification>
           <FaCheckCircle />
@@ -424,6 +484,10 @@ const GuestDashboard = () => {
       )}
        <WelcomeSection>
       <h1>Welcome {user?.name ? `, ${user.name}` : 'to Your Dashboard'}</h1>
+=======
+       <WelcomeSection>
+      <h1>Welcome {user?.name ? `, ${user.name.trim()}` : 'to Your Dashboard'}</h1>
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
       <p>Manage your bookings and explore our premium hotel services</p>
     </WelcomeSection>
 
@@ -514,6 +578,7 @@ const GuestDashboard = () => {
         </Card>
         
       </CardGrid>
+<<<<<<< HEAD
       {successMessage && (
         <div style={{ textAlign: 'center', color: '#28a745', marginBottom: '20px' }}>
           {successMessage}
@@ -526,6 +591,13 @@ const GuestDashboard = () => {
         onSave={(updatedData) => {
           handleEditProfile(updatedData);
         }}
+=======
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleEditProfile}
+        userData={user}
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
       />
     </DashboardContainer>
   );

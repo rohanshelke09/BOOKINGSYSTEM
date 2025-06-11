@@ -11,6 +11,7 @@ const UseHotelDashboard = () => {
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     totalBookings: 0,
+<<<<<<< HEAD
     // occupancyRate: 0,
     // revenue: 0,
     availableRooms: 0
@@ -39,6 +40,21 @@ const UseHotelDashboard = () => {
     console.log('Occupancy calculation:', {
       occupied: occupiedRooms,
       totalRooms: totalRooms,
+=======
+    occupancyRate: 0,
+
+    availableRooms: 0
+  });
+
+  const calculateOccupancyRate = (bookings,rooms) => {
+    if (!Array.isArray(bookings) || bookings.length === 0) return 0;
+    
+    const confirmedBookings = bookings.filter(booking => booking.status === 'confirmed'||'Confirmed');
+    const rate = (confirmedBookings.length / rooms.length) * 100;
+    console.log('Occupancy calculation:', {
+      confirmed: confirmedBookings.length,
+      total: rooms.length,
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
       rate: rate
     });
 
@@ -56,6 +72,7 @@ const UseHotelDashboard = () => {
     return availableRooms.length;
   };
 
+<<<<<<< HEAD
   // const calculateRevenue = (bookings) => {
   //   if (!Array.isArray(bookings)) return 0;
   //   const revenue = bookings.reduce((total, booking) => {
@@ -66,6 +83,8 @@ const UseHotelDashboard = () => {
   //   }, 0);
   //   return revenue;
   // };
+=======
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,7 +124,7 @@ const UseHotelDashboard = () => {
         // Fetch bookings and rooms only have hotel
         if (currentHotelId) {
           const [bookingsResponse, roomsResponse] = await Promise.all([
-            axios.get(`https://localhost:7125/api/Bookings/hotel/${currentHotelId}`, {
+            axios.get(`https://localhost:7125/api/Bookings/Hotel/${currentHotelId}`, {
               headers: { Authorization: `Bearer ${tokenObj.token}` }
             }),
             axios.get(`https://localhost:7125/api/Rooms/${currentHotelId}/rooms`, {
@@ -113,6 +132,7 @@ const UseHotelDashboard = () => {
             })
           ]);
 
+<<<<<<< HEAD
           const bookingsData = bookingsResponse.data || [];
           const roomsData = roomsResponse.data || [];
           const totalRooms = roomsData.length;
@@ -125,6 +145,20 @@ const UseHotelDashboard = () => {
             occupancyRate: calculateOccupancyRate(bookingsData, totalRooms),
             // revenue: calculateRevenue(bookingsData),
             availableRooms: calculateAvailableRooms(roomsData)
+=======
+          setBookings(bookingsResponse.data);
+          setRooms(roomsResponse.data);
+          console.log('Bookings:', bookingsResponse.data);
+          console.log('Rooms:', roomsResponse.data);
+          // Update stats only if we have valid data
+          setStats({
+
+            totalBookings: bookingsResponse.data.length || 0,
+            occupancyRate: calculateOccupancyRate(bookingsResponse.data, roomsResponse.data),
+     
+            availableRooms: calculateAvailableRooms(roomsResponse.data)
+
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
           });
         }
 

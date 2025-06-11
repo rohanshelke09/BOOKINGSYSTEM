@@ -1,16 +1,16 @@
 import React from 'react';
+
 import { FaCalendarCheck } from 'react-icons/fa';
 import { Card, BookingCard, ActionButton } from './Styles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate ,useParams} from 'react-router-dom';
 
-const BookingList = ({ bookings, loading, onBookingClick,  }) => {
-  const Navigate = useNavigate();
+const BookingList = ({ bookings, loading, onBookingClick, hotelID,onViewAllClick }) => {
+
+    const Navigate = useNavigate();
   if (loading) {
     return <p>Loading bookings...</p>;
   }
-  const onViewAllClick = () => {
-    Navigate('/bookings');
-  };
+
 
   // Filter bookings within last 2 days
   const twoDaysAgo = new Date();

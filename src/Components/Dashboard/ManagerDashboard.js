@@ -86,7 +86,7 @@ const ManagerDashboard = () => {
     error 
   } = UseHotelDashboard();
   const navigate = useNavigate();
-
+console.log(stats);
   if (loading) {
     return (
       <DashboardContainer>
@@ -113,6 +113,7 @@ const ManagerDashboard = () => {
       value: stats.totalBookings,
       color: "#2193b0"
     },
+<<<<<<< HEAD
     // {
     //   icon: FaChartLine,
     //   label: "Occupancy Rate",
@@ -125,6 +126,15 @@ const ManagerDashboard = () => {
     //   value: `$${stats.revenue.toLocaleString()}`,
     //   color: "#00cec9"
     // },
+=======
+    {
+      icon: FaChartLine,
+      label: "Occupancy Rate",
+      value: `${stats.occupancyRate}%`,
+      color: "#00b894"
+    },
+
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
     {
       icon: FaBed,
       label: "Available Rooms",
@@ -154,7 +164,7 @@ const ManagerDashboard = () => {
           bookings={bookings} 
           loading={loading} 
           onBookingClick={(id) => navigate(`/bookings/${id}`)}
-          onViewAllClick={() => navigate('/bookings')}
+          onViewAllClick={() => navigate(`/bookings/hotel/${hotelID}`)}
         />
         
         <QuickActions 

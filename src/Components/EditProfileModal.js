@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
+=======
+import React, { useState } from 'react';
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
 import styled from 'styled-components';
 import { FaTimes } from 'react-icons/fa';
 
@@ -180,6 +184,17 @@ const EditProfileModal = ({ isOpen, onClose, userData, onSave }) => {
       ...prev,
       [name]: value
     }));
+
+const EditProfileModal = ({ isOpen, onClose, onSave, userData }) => {
+  const [formData, setFormData] = useState({
+    name: userData?.name || '',
+    email: userData?.email || '',
+    contactNumber: userData?.contactNumber || ''
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
   };
 
   if (!isOpen) return null;
@@ -244,6 +259,48 @@ const EditProfileModal = ({ isOpen, onClose, userData, onSave }) => {
               disabled={loading}
             >
               {loading ? 'Saving...' : 'Save Changes'}
+        <CloseButton onClick={onClose}>
+          <FaTimes />
+        </CloseButton>
+        
+        <h2>Edit Profile</h2>
+        
+        <Form onSubmit={handleSubmit}>
+          <FormGroup>
+            <label>Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <label>Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+            />
+          </FormGroup>
+          
+          <FormGroup>
+            <label>Phone Number</label>
+            <input
+              type="tel"
+              value={formData.contactNumber}
+              onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
+            />
+          </FormGroup>
+          
+          <ButtonGroup>
+            <Button type="button" className="cancel" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" className="save">
+              Save Changes
             </Button>
           </ButtonGroup>
         </Form>

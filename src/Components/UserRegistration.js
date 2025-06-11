@@ -279,7 +279,11 @@ const UserRegistration = () => {
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
                         >
+<<<<<<< HEAD
                             {/* {showPassword ? <FaEyeSlash /> : <FaEye />} */}
+=======
+                            {showPassword ? <FaEyeSlash /> : <FaEye />}
+>>>>>>> cdbec7af3389c015bb853cb166723b22d73ac7b8
                         </TogglePasswordButton>
                     </PasswordWrapper>
                     {errors.password && <ErrorText>{errors.password}</ErrorText>}
